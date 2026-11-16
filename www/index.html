@@ -707,7 +707,7 @@ function gear(mode,msgT){
  if(it)sim=gsel.e?statSim(function(){unCore(gsel.e);return '';}):statSim(function(){return eqCore(gsel.b,false);});
  h+='</div></div><div><p class="pts">Характеристики'+(sim?(gsel.e?' · если снять':' · если надеть'):'')+'</p><div class="stt">'+statHtml(cur,sim)+'</div></div></div><div class="det">';
  if(it){h+='<p><strong style="color:'+QC[it.q]+'">'+itName(it)+'</strong><br>'+itDesc(it,gsel.e==='o')+'</p>';
-  if(gsel.e)h+='<button id="g1">Снять</button>';else h+='<button id="g1">Надеть</button>'+(canOff(it)?'<button id="g2" class="sec2">Во вторую руку</button>':'')+'<button id="g3" class="sec2">Выбросить</button>';}
+  if(gsel.e)h+='<button id="g1">Снять</button><button id="g3" class="sec2">Выбросить</button>';else h+='<button id="g1">Надеть</button>'+(canOff(it)?'<button id="g2" class="sec2">Во вторую руку</button>':'')+'<button id="g3" class="sec2">Выбросить</button>';}
  else h+='<p>Нажмите на предмет: справа будет видно, как изменятся характеристики. Вещь из сумки можно надеть или выбросить, продать — в Кузнице.</p>';
  if(msgT)h+='<p class="pts">'+msgT+'</p>';
  h+='</div>'+(run?'<button id="bk" class="sec2">Вернуться в бой</button>':back());
@@ -715,7 +715,7 @@ function gear(mode,msgT){
  on('bk',run?function(){gsel=null;state='play';ui.className='hide';}:function(){gsel=null;city();});
  each('cell',function(){var e=this.getAttribute('data-e'),b=this.getAttribute('data-b');
   if(e)gsel=C.eq[e]?{e:e}:null;else gsel=C.bag[+b]?{b:+b}:null;gear(mode);});
- var g3=document.getElementById('g3');on('g3',function(){if(!g3.getAttribute('data-ok')){g3.setAttribute('data-ok','1');g3.textContent='Точно выбросить? Вещь пропадёт';return;}C.bag.splice(gsel.b,1);gsel=null;save();gear(mode,'Предмет выброшен.');});
+ var g3=document.getElementById('g3');on('g3',function(){if(!g3.getAttribute('data-ok')){g3.setAttribute('data-ok','1');g3.textContent='Точно выбросить? Вещь пропадёт';return;}if(gsel.e){C.eq[gsel.e]=null;MC=null;if(run&&hero)applyD(false);}else C.bag.splice(gsel.b,1);gsel=null;save();gear(mode,'Предмет выброшен.');});
  on('g1',function(){var m='';if(gsel.e){unCore(gsel.e);save();}else m=equip(gsel.b,false);
   gsel=null;if(run&&hero)applyD(false);gear(mode,m);});
  on('g2',function(){var m=equip(gsel.b,true);gsel=null;if(run&&hero)applyD(false);gear(mode,m);});
