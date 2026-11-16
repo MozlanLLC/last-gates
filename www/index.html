@@ -857,7 +857,7 @@ function sheet(mode){
  var ac=actives();
  if(ac.length){h+='<p class="pts">Камни поддержки в навыках · гнёзд на навык: '+sockN()+'</p>';
   for(i=0;i<ac.length;i++){var sk=ac[i],so=socks(sk);h+='<div class="row rowt">'+icoBox(sk,'#ffb454')+'<span><strong>'+SK[sk].name+'</strong><br>'+SK[sk].tags.join(', ')+'</span>';
-   for(var j=0;j<so.length;j++)h+=mode==='camp'?'<button class="pb so" data-k="'+sk+'" data-i="'+j+'">'+(so[j]?icoSvg(so[j],'#ffc53d',16)+ST[so[j]].name:'пусто')+'</button>':'<i style="width:auto;margin-left:10px">'+(so[j]?icoSvg(so[j],'#ffc53d',16)+' '+ST[so[j]].name:'пусто')+'</i>';
+   for(var j=0;j<so.length;j++)h+=mode==='camp'?'<button class="pb so" data-k="'+sk+'" data-i="'+j+'">'+(so[j]?icoSvg(so[j],'#0b0d15',16)+ST[so[j]].name:'пусто')+'</button>':'<i style="width:auto;margin-left:10px">'+(so[j]?icoSvg(so[j],'#ffc53d',16)+' '+ST[so[j]].name:'пусто')+'</i>';
    h+='</div>';}}
  h+='<p class="pts">Камни поддержки: '+C.stones.length+' из 8</p>';
  if(!C.stones.length)h+='<p>Пока нет. Камни лежат в тайниках и падают с элитных монстров.</p>';
