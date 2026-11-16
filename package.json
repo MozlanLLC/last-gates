@@ -1,0 +1,18 @@
+{
+  "name": "last-gates",
+  "version": "0.7.0",
+  "private": true,
+  "description": "Последние Врата — обёртка Capacitor для сборки APK",
+  "scripts": {
+    "add-android": "cap add android",
+    "sync": "cap sync android",
+    "open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest"
+  }
+}
