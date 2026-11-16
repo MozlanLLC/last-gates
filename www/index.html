@@ -109,6 +109,7 @@ function ri(n){return Math.floor(Math.random()*n);}
 function clamp(v,a,b){return v<a?a:v>b?b:v;}
 function dist(a,b){var dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy);}
 function solid(px,py){var i=Math.floor(px/T),j=Math.floor(py/T);if(i<0||j<0||i>=MW||j>=MH)return true;return map[j*MW+i]===0;}
+function los(a,b){var dx=b.x-a.x,dy=b.y-a.y,n=Math.ceil(Math.sqrt(dx*dx+dy*dy)/18);for(var i=1;i<n;i++)if(solid(a.x+dx*i/n,a.y+dy*i/n))return false;return true;}
 function blocked(x,y,r){return solid(x-r,y-r)||solid(x+r,y-r)||solid(x-r,y+r)||solid(x+r,y+r);}
 function move(e,dx,dy){if(!blocked(e.x+dx,e.y,e.r))e.x+=dx;if(!blocked(e.x,e.y+dy,e.r))e.y+=dy;}
 function cen(r){return {i:Math.floor(r.x+r.w/2),j:Math.floor(r.y+r.h/2)};}
@@ -802,7 +803,7 @@ function raceSelect(){
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.8 · пять этажей Лабиринта</p><p>Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. После закрытия монстры усиливаются каждые 30 секунд. Основной опыт даётся за первое убийство каждого вида монстров.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.8 · пять этажей Лабиринта</p><p>Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. После закрытия монстры усиливаются каждые 30 секунд. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
@@ -831,7 +832,7 @@ function update(dt){
   m.cd-=dt;if(m.flash>0)m.flash-=dt;if(m.sund>0)m.sund-=dt;
   for(var z=m.dots.length-1;z>=0;z--){var dt2=m.dots[z];m.hp-=dt2.dps*dt;if(dt2.bl&&M().bleedHeal)heal(dt2.dps*dt);dt2.t-=dt;if(dt2.t<=0)m.dots.splice(z,1);}
   if(m.hp<=0)continue;if(m.stun>0){m.stun-=dt;continue;}
-  if(m.state==='idle'){if(d<(m.boss?290:230)||(dark>0&&!m.boss))m.state='chase';else continue;}
+  if(m.state==='idle'){if((d<(m.boss?290:230)&&los(m,hero))||m.hp<m.mhp||(dark>0&&!m.boss))m.state='chase';else continue;}
   var sp2=m.spd*boost*(m.slow>0?0.5:1);if(m.slow>0)m.slow-=dt;
   if(m.ai==='boss'){bossAI(m,dt,d,ux,uy,sp2);}
   else if(m.ai==='gob'){
@@ -1013,8 +1014,8 @@ function draw(){
    if(j>0&&!map[idx-MW]){ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(x,y,T,8);}}
   else{var vis=false,di,dj;for(dj=-1;dj<=1&&!vis;dj++)for(di=-1;di<=1;di++){var ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=MW||nj>=MH)continue;if(map[nj*MW+ni]&&seen[nj*MW+ni]){vis=true;break;}}
    if(!vis)continue;
-   if(j<MH-1&&map[idx+MW]){ctx.fillStyle=P.wt;ctx.fillRect(x,y,T,T*0.42);ctx.fillStyle=P.wf;ctx.fillRect(x,y+T*0.42,T,T*0.58);ctx.fillStyle=P.wl;ctx.fillRect(x,y+T*0.42,T,2);ctx.fillRect(x,y+T*0.7,T,1);ctx.fillRect(x+((i+j)%2?10:26),y+T*0.44,1,T*0.26);ctx.fillRect(x+((i+j)%2?26:10),y+T*0.7,1,T*0.3);ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fillRect(x,y,T,2);}
-   else{ctx.fillStyle=P.wt;ctx.fillRect(x,y,T,T);ctx.fillStyle='rgba(0,0,0,0.28)';ctx.fillRect(x,y,T,T);ctx.fillStyle='rgba(255,255,255,0.05)';ctx.fillRect(x+4,y+4,T-8,1);}}}
+   if(j<MH-1&&map[idx+MW]){ctx.fillStyle='#0d0e15';ctx.fillRect(x,y,T,T*0.42);ctx.fillStyle=P.wt;ctx.fillRect(x,y+T*0.3,T,T*0.12);ctx.fillStyle=P.wf;ctx.fillRect(x,y+T*0.42,T,T*0.58);ctx.fillStyle=P.wl;ctx.fillRect(x,y+T*0.42,T,2);ctx.fillRect(x,y+T*0.7,T,1);ctx.fillRect(x+((i+j)%2?10:26),y+T*0.44,1,T*0.26);ctx.fillRect(x+((i+j)%2?26:10),y+T*0.7,1,T*0.3);}
+   else{ctx.fillStyle='#0d0e15';ctx.fillRect(x,y,T,T);ctx.fillStyle=P.wl;if(j>0&&map[idx-MW])ctx.fillRect(x,y,T,4);if(i>0&&map[idx-1])ctx.fillRect(x,y,4,T);if(i<MW-1&&map[idx+1])ctx.fillRect(x+T-4,y,4,T);}}}
  var pt=elapsed*2;ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
  glow(portal.x,portal.y,34,'155,123,255',0.45);ctx.strokeStyle='#9b7bff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(portal.x,portal.y,22+Math.sin(pt)*2,0,6.283);ctx.stroke();
  ctx.strokeStyle='#5ee6d0';ctx.beginPath();ctx.arc(portal.x,portal.y,14,pt,pt+4.2);ctx.stroke();ctx.strokeStyle='#f4f7ff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(portal.x,portal.y,7,-pt*1.5,-pt*1.5+3);ctx.stroke();
