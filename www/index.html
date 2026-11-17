@@ -2,6 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#06070b">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Последние Врата — прототип</title>
 <style>
@@ -74,6 +77,7 @@ textarea{width:100%;box-sizing:border-box;height:72px;margin-top:8px;background:
 <body>
 <canvas id="c"></canvas>
 <div id="ui"><div id="box"></div></div>
+<button id="fsb" aria-label="Полный экран" title="Полный экран" style="position:fixed;z-index:50;top:6px;left:max(266px, calc(50% - 160px));width:34px;height:34px;min-width:0;padding:0;margin:0;border-radius:10px;background:rgba(14,17,25,0.75);border:1.5px solid #3a4158;display:none;align-items:center;justify-content:center"></button>
 <div id="tree" class="hide"><div id="tsv"></div></div>
 <div id="tbar" class="hide"></div>
 <script>
@@ -1281,11 +1285,19 @@ function treas(){
  h+=C.debt?'<p class="pts">За вами долг. Казначейство заберёт половину золота за добычу ближайшей успешной экспедиции, после этого долг погашен.</p>':'<p>Долгов нет. Если на Десятину не хватит золота, можно спуститься в долг: Казначейство заберёт половину добычи этой экспедиции.</p>';
  show(h+back());on('bk',city);
 }
+function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement;}
+function fsCan(){var d=document.documentElement||{};return !(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())&&!!(d.requestFullscreen||d.webkitRequestFullscreen);}
+function fsToggle(){try{if(fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else{var d=document.documentElement,r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d,{navigationUI:'hide'});var lk=function(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});}catch(e){}};if(r&&r.then)r.then(lk).catch(function(){});else lk();}}catch(e){}}
+function fsUpd(){var b=document.getElementById('fsb');if(!b||!b.style)return;if(!fsCan()){b.style.display='none';return;}b.style.display='flex';var on2=!!fsEl();
+ b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c9d1e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(on2?'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5':'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5')+'"></path></svg>';b.setAttribute('aria-label',on2?'Выйти из полного экрана':'Полный экран');b.title=on2?'Выйти из полного экрана':'Полный экран';}
+(function(){var b=document.getElementById('fsb');if(b&&b.addEventListener){b.addEventListener('click',function(e){if(e&&e.stopPropagation)e.stopPropagation();fsToggle();});b.addEventListener('pointerdown',function(e){if(e&&e.stopPropagation)e.stopPropagation();});}
+ if(document.addEventListener){document.addEventListener('fullscreenchange',fsUpd);document.addEventListener('webkitfullscreenchange',fsUpd);}fsUpd();})();
 function saves(){
  var code='';try{code=btoa(unescape(encodeURIComponent(JSON.stringify(C))));}catch(e){}
- var h='<h2>Настройки и сохранение</h2><p>Игра сохраняется в памяти устройства сама. Смерть в Лабиринте окончательна, перенести или восстановить героя нельзя.</p><button id="tst" class="sec2">Тест: шанс эссенций и уникальных вещей ×10 — '+(C.test?'включён':'выключен')+'</button><button id="snd" class="sec2">Звук: '+(C.mute?'выключен':'включён')+'</button><button id="re" class="sec2">Новый герой</button>';
+ var h='<h2>Настройки и сохранение</h2><p>Игра сохраняется в памяти устройства сама. Смерть в Лабиринте окончательна, перенести или восстановить героя нельзя.</p><button id="tst" class="sec2">Тест: шанс эссенций и уникальных вещей ×10 — '+(C.test?'включён':'выключен')+'</button>'+(fsCan()?'<button id="fsm" class="sec2">'+(fsEl()?'Выйти из полного экрана':'Полный экран')+'</button>':'')+'<button id="snd" class="sec2">Звук: '+(C.mute?'выключен':'включён')+'</button><button id="re" class="sec2">Новый герой</button>';
  show(h+back());on('bk',city);
  on('tst',function(){C.test=!C.test;save();saves();});
+ on('fsm',function(){fsToggle();setTimeout(saves,400);});
  on('snd',function(){C.mute=!C.mute;save();if(!C.mute){audioOn();sfx('pick');}saves();});
  var re=document.getElementById('re');on('re',function(){if(re.getAttribute('data-ok')){raceSelect();}else{re.setAttribute('data-ok','1');re.textContent='Стереть героя и начать заново?';}});
 }
@@ -1369,7 +1381,7 @@ function raceSelect(){
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.21 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.22 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
