@@ -65,6 +65,16 @@ textarea{width:100%;box-sizing:border-box;height:72px;margin-top:8px;background:
 .cell.brk{opacity:.45}
 .cell em{position:absolute;left:4px;top:2px;font-size:10px;font-style:normal;color:#f4f7ff}
 .cell small{position:absolute;right:4px;top:2px;font-size:10px;color:#8f99b3}
+.nav{position:sticky;top:-20px;z-index:6;background:#06070b;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;padding:8px 40px 8px 0;margin:-8px 0 10px;border-bottom:1px solid #1b2031}
+.nav button{margin:0;min-width:0;min-height:38px;padding:6px 12px;font-size:14px;font-weight:600;background:#10131f;color:#c9d1e6;border:1.5px solid #2f3750;border-radius:10px;display:inline-flex;align-items:center;gap:6px}
+.nav button.on{background:#5ee6d0;color:#06070b;border-color:#5ee6d0}
+.nav button.nx{background:#1c2236;color:#f4f7ff;border-color:#5ee6d0;margin-left:8px}
+.nav .dot{display:inline-block;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#ffc53d;color:#06070b;font-size:11px;line-height:16px;font-weight:800;box-sizing:border-box}
+.nav button.glw{animation:glw 1.5s infinite;border-color:#ffc53d}
+.pop{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:40;padding:12px;box-sizing:border-box}
+.popc{background:#10131f;border:1.5px solid #3a4158;border-radius:16px;padding:14px 16px;max-width:620px;width:100%;max-height:100%;overflow:auto;text-align:left;box-sizing:border-box}
+.popc button{margin:8px 8px 0 0;min-width:110px;min-height:42px;font-size:15px}
+.popc .stt{min-width:0}
 .det{text-align:left;margin-top:10px;min-height:70px}
 .stt{font-size:13px;min-width:230px}
 .stt div{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px solid #1b2031;color:#b6bfd6}
@@ -1030,6 +1040,9 @@ function statNow(){MC=null;var D=derive(),t=M(),wi=C.eq.w,wb=works(wi)?B[wi.b]:n
  return {dmg:[Math.round(lo*k),Math.round(hi*k)],aspd:D.aspd,pdef:D.pdef,hp:D.hp,mp:D.mp,acc:D.acc,eva:D.eva,crit:D.crit,critp:D.critp,blk:t.block||0,regen:D.regen,mreg:D.mreg,move:Math.round(D.spdM*100)};}
 function statSim(fn){var e0=C.eq,b0=C.bag,k,e1={};for(k in e0)e1[k]=e0[k];C.eq=e1;C.bag=b0.slice();var bad=fn(),r=bad?null:statNow();C.eq=e0;C.bag=b0;MC=null;return r;}
 var STL=[['dmg','Урон за удар',''],['aspd','Скорость атаки','%'],['pdef','Физ. защита',''],['hp','ХП',''],['mp','МП',''],['acc','Точность',''],['eva','Уклонение',''],['crit','Шанс крита','%'],['critp','Сила крита','%'],['blk','Шанс блока','%'],['regen','Восстановление ХП',''],['mreg','Восстановление МП',''],['move','Скорость бега','%']];
+function diffHtml(a,b){if(!b)return '';var h='';for(var i=0;i<STL.length;i++){var k=STL[i][0],u=STL[i][2],na=k==='dmg'?a.dmg[0]+a.dmg[1]:a[k],nb=k==='dmg'?b.dmg[0]+b.dmg[1]:b[k];if(nb===na)continue;
+ h+='<div><span>'+STL[i][1]+'</span><b>'+(k==='dmg'?a.dmg[0]+'–'+a.dmg[1]:a[k]+u)+' <span class="'+(nb>na?'up':'dn')+'">→ '+(k==='dmg'?b.dmg[0]+'–'+b.dmg[1]:b[k]+u)+'</span></b></div>';}return h;}
+function eqSlotOf(it){var sl=B[it.b].slot;if(sl==='r')return C.eq.r1?(C.eq.r2?'r1':'r2'):'r1';return C.eq[sl]!==undefined||['w','a','h','gl','b','o','am'].indexOf(sl)>=0?sl:null;}
 function statHtml(a,b){var h='',i;for(i=0;i<STL.length;i++){var k=STL[i][0],u=STL[i][2],va=k==='dmg'?a.dmg[0]+'–'+a.dmg[1]:a[k]+u,x='';
   if(b){var na=k==='dmg'?a.dmg[0]+a.dmg[1]:a[k],nb=k==='dmg'?b.dmg[0]+b.dmg[1]:b[k];if(nb!==na)x=' <span class="'+(nb>na?'up':'dn')+'">→ '+(k==='dmg'?b.dmg[0]+'–'+b.dmg[1]:b[k]+u)+'</span>';}
   h+='<div><span>'+STL[i][1]+'</span><b>'+va+x+'</b></div>';}return h;}
@@ -1129,20 +1142,23 @@ var gsel=null;
 function gear(mode,msgT){
  var run=mode==='run',i,order=['r1','h','am','w','a','o','gl','b','r2'],lab={r1:'Кольцо',h:'Шлем',am:'Амулет',w:'Оружие',a:'Броня',o:'Вторая рука',gl:'Перчатки',b:'Сапоги',r2:'Кольцо'};
  if(run){joy=null;input.atk=false;}
- var h=(run?'<h2>Снаряжение</h2>':head('Снаряжение'))+'<div class="inv"><div><p class="pts">Надето</p><div class="doll">';
+ var h=navBar(mode,'gear')+(run?'':'<p class="stat">Золото: '+C.gold+'</p>')+'<div class="inv"><div><p class="pts">Надето</p><div class="doll">';
  for(i=0;i<9;i++)h+=cell(C.eq[order[i]],'data-e="'+order[i]+'"',lab[order[i]],!!gsel&&gsel.e===order[i]);
  h+='</div></div><div><p class="pts">Сумка: '+C.bag.length+' из 20</p><div class="bagg">';
  for(i=0;i<Math.max(20,C.bag.length);i++)h+=cell(C.bag[i]||null,'data-b="'+i+'"','',!!gsel&&gsel.b===i);
  var it=gsel?(gsel.e?C.eq[gsel.e]:C.bag[gsel.b]):null,cur=statNow(),sim=null;
  if(it)sim=gsel.e?statSim(function(){unCore(gsel.e);return '';}):statSim(function(){return eqCore(gsel.b,false);});
- h+='</div></div><div><p class="pts">Характеристики'+(sim?(gsel.e?' · если снять':' · если надеть'):'')+'</p><div class="stt">'+statHtml(cur,sim)+'</div></div></div><div class="det">';
- if(it){h+='<p><strong style="color:'+QC[it.q]+'">'+itName(it)+'</strong><br>'+itDesc(it,gsel.e==='o')+'</p>';
-  if(gsel.e)h+='<button id="g1">Снять</button><button id="g3" class="sec2">Выбросить</button>';else h+='<button id="g1">Надеть</button>'+(canOff(it)?'<button id="g2" class="sec2">Во вторую руку</button>':'')+'<button id="g3" class="sec2">Выбросить</button>';}
- else h+='<p>Нажмите на предмет: справа будет видно, как изменятся характеристики. Вещь из сумки можно надеть или выбросить, продать — в Кузнице.</p>';
+ h+='</div></div><div><p class="pts">Характеристики</p><div class="stt">'+statHtml(cur,null)+'</div></div></div><div class="det">';
  if(msgT)h+='<p class="pts">'+msgT+'</p>';
- h+='</div>'+(run?'<button id="bk" class="sec2">Вернуться в бой</button>':back());
- var sc=ui.scrollTop;show(h);ui.scrollTop=sc;if(run)state='sheet';
- on('bk',run?function(){gsel=null;state='play';ui.className='hide';}:function(){gsel=null;city();});
+ h+='<p>Нажмите на вещь, чтобы увидеть её свойства и что изменится. Продать вещь можно в Кузнице.</p></div>';
+ if(it){var slK=gsel.e?null:eqSlotOf(it),cmp=slK&&C.eq[slK]?C.eq[slK]:null;
+  h+='<div class="pop" id="gpop"><div class="popc" style="border-color:'+QC[it.q]+'"><div style="display:flex;gap:10px;align-items:center">'+icoBox(icoKey(B[it.b]),itCol(it))+'<strong style="color:'+QC[it.q]+';font-size:17px">'+itName(it)+'</strong></div><p style="margin:8px 0">'+itDesc(it,gsel.e==='o')+'</p>';
+  if(cmp)h+='<p style="margin:6px 0;font-size:13px;color:#8f99b3">Сейчас надето: <span style="color:'+QC[cmp.q]+'">'+itName(cmp)+'</span><br>'+itDesc(cmp,slK==='o')+'</p>';
+  var dh=diffHtml(cur,sim);h+='<p class="pts" style="margin:8px 0 4px">'+(gsel.e?'Если снять':'Если надеть')+'</p>'+(dh?'<div class="stt">'+dh+'</div>':'<p style="font-size:13px">Основные характеристики не изменятся.</p>');
+  if(gsel.e)h+='<button id="g1">Снять</button><button id="g3" class="sec2">Выбросить</button>';else h+='<button id="g1">Надеть</button>'+(canOff(it)?'<button id="g2" class="sec2">Во вторую руку</button>':'')+'<button id="g3" class="sec2">Выбросить</button>';
+  h+='<button id="gx" class="sec2">Закрыть</button></div></div>';}
+ var sc=ui.scrollTop;show(h);ui.scrollTop=sc;if(run)state='sheet';navOn(mode);
+ on('gx',function(){gsel=null;gear(mode);});var gp=document.getElementById('gpop');if(gp&&gp.addEventListener)gp.addEventListener('click',function(e){if(e.target===gp){gsel=null;gear(mode);}});
  each('cell',function(){var e=this.getAttribute('data-e'),b=this.getAttribute('data-b');
   if(e)gsel=C.eq[e]?{e:e}:null;else gsel=C.bag[+b]?{b:+b}:null;gear(mode);});
  var g3=document.getElementById('g3');on('g3',function(){if(!g3.getAttribute('data-ok')){g3.setAttribute('data-ok','1');g3.textContent='Точно выбросить? Вещь пропадёт';return;}if(gsel.e){C.eq[gsel.e]=null;MC=null;if(run&&hero)applyD(false);}else C.bag.splice(gsel.b,1);gsel=null;save();gear(mode,'Предмет выброшен.');});
@@ -1158,10 +1174,9 @@ function stashS(msgT){
  for(i=0;i<40;i++)h+=cell(C.stash[i]||null,'data-t="'+i+'"','',!!ssel&&ssel.t===i);
  h+='</div></div></div><div class="det">';
  var it=ssel?(ssel.b!==undefined?C.bag[ssel.b]:C.stash[ssel.t]):null;
- if(it)h+='<p><strong style="color:'+QC[it.q]+'">'+itName(it)+'</strong><br>'+itDesc(it)+'</p><button id="s1">'+(ssel.b!==undefined?'Положить в сундук':'Забрать в сумку')+'</button>';
- else h+='<p>Нажмите на предмет, чтобы переложить его.</p>';
- if(msgT)h+='<p class="pts">'+msgT+'</p>';
- var sc=ui.scrollTop;show(h+'</div>'+back());ui.scrollTop=sc;on('bk',function(){ssel=null;city();});
+ if(msgT)h+='<p class="pts">'+msgT+'</p>';h+='<p>Нажмите на предмет, чтобы переложить его.</p></div>';
+ if(it)h+='<div class="pop" id="spop"><div class="popc" style="border-color:'+QC[it.q]+'"><div style="display:flex;gap:10px;align-items:center">'+icoBox(icoKey(B[it.b]),itCol(it))+'<strong style="color:'+QC[it.q]+';font-size:17px">'+itName(it)+'</strong></div><p>'+itDesc(it)+'</p><button id="s1">'+(ssel.b!==undefined?'Положить в сундук':'Забрать в сумку')+'</button><button id="sx" class="sec2">Закрыть</button></div></div>';
+ var sc=ui.scrollTop;show(h+back());ui.scrollTop=sc;on('bk',function(){ssel=null;city();});on('sx',function(){ssel=null;stashS();});var sp=document.getElementById('spop');if(sp&&sp.addEventListener)sp.addEventListener('click',function(e){if(e.target===sp){ssel=null;stashS();}});
  each('cell',function(){var b=this.getAttribute('data-b'),t=this.getAttribute('data-t');if(b!==null)ssel=C.bag[+b]?{b:+b}:null;else ssel=C.stash[+t]?{t:+t}:null;stashS();});
  on('s1',function(){var m='';if(ssel.b!==undefined){if(C.stash.length>=40)m='Сундук полон.';else C.stash.push(C.bag.splice(ssel.b,1)[0]);}else{if(C.bag.length>=20)m='Сумка полна.';else C.bag.push(C.stash.splice(ssel.t,1)[0]);}ssel=null;save();stashS(m);});
 }
@@ -1288,6 +1303,7 @@ function treas(){
 function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement;}
 function fsCan(){var d=document.documentElement||{};return !(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())&&!!(d.requestFullscreen||d.webkitRequestFullscreen);}
 function fsToggle(){try{if(fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else{var d=document.documentElement,r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d,{navigationUI:'hide'});var lk=function(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});}catch(e){}};if(r&&r.then)r.then(lk).catch(function(){});else lk();}}catch(e){}}
+var fsMode='';function fsPos(){var b=document.getElementById('fsb');if(!b||!b.style)return;var m=state==='play'?'p':'m';if(m===fsMode)return;fsMode=m;if(m==='p'){b.style.left='max(266px, calc(50% - 160px))';b.style.right='auto';b.style.top='6px';}else{b.style.left='auto';b.style.right='8px';b.style.top='8px';}}
 function fsUpd(){var b=document.getElementById('fsb');if(!b||!b.style)return;if(!fsCan()){b.style.display='none';return;}b.style.display='flex';var on2=!!fsEl();
  b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c9d1e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(on2?'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5':'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5')+'"></path></svg>';b.setAttribute('aria-label',on2?'Выйти из полного экрана':'Полный экран');b.title=on2?'Выйти из полного экрана':'Полный экран';}
 (function(){var b=document.getElementById('fsb');if(b&&b.addEventListener){b.addEventListener('click',function(e){if(e&&e.stopPropagation)e.stopPropagation();fsToggle();});b.addEventListener('pointerdown',function(e){if(e&&e.stopPropagation)e.stopPropagation();});}
@@ -1304,17 +1320,22 @@ function saves(){
 function secVal(k,D){var v=D[k];return (k==='crit'||k==='critp'||k==='aspd'||k==='cspd')?v+'%':''+v;}
 var stSel=null;
 function stoneUsed(sid){var a=actives();for(var x=0;x<a.length;x++)if(socks(a[x]).indexOf(sid)>=0)return a[x];return null;}
+var shTab='st';
+function navBar(mode,act){var pts=C.sp+C.pp,run=mode==='run',b=function(id,t,ic,n,gl){return '<button class="nv'+(act===id?' on':'')+(gl?' glw':'')+'" data-v="'+id+'">'+icoSvg(ic,act===id?'#06070b':'#c9d1e6',16)+t+(n?' <span class="dot">'+n+'</span>':'')+'</button>';};
+ return '<div class="nav">'+b('st','Герой','heroI',pts,pts>0)+b('sk','Навыки','s3',0,false)+b('wm','Владение','sword',0,false)+b('gear','Снаряжение','armor',0,false)+b('tree','Древо','star',C.tp,C.tp>0)+'<button class="nx" id="nvx">'+(run?'В бой ▶':'В город')+'</button></div>';}
+function navOn(mode){var a=box.querySelectorAll('.nv');for(var i=0;i<a.length;i++)a[i].addEventListener('click',function(){var v=this.getAttribute('data-v');gsel=null;if(v==='gear')gear(mode);else if(v==='tree')treeOpen(mode);else{shTab=v;sheet(mode);}});
+ on('nvx',function(){gsel=null;if(mode==='run'){state='play';ui.className='hide';}else city();});}
 function sheet(mode){
  if(mode==='run'){if(state!=='play'&&state!=='sheet')return;state='sheet';joy=null;input.atk=false;}else state='menu';
- var D=derive(),i,h='<div class="sh"><div class="col"><h2>'+RACES[C.race].name+' · уровень '+C.lvl+'</h2>';
+ var D=derive(),i,h=navBar(mode,shTab)+'<div class="sh"'+(shTab==='st'?'':' style="display:none"')+'><div class="col"><h2>'+RACES[C.race].name+' · уровень '+C.lvl+'</h2>';
  h+=C.lvl<15?'<p>Опыт: '+C.xp+' / '+need(C.lvl)+'</p>':'<p>Максимальный уровень</p>';
  h+='<p class="pts">Очки характеристик: '+C.sp+'</p>';
  for(i=0;i<6;i++)h+='<div class="row"><span>'+SN[i]+'</span><b>'+C.st[i]+'</b>'+(C.sp>0?'<button class="pl" data-s="'+i+'" aria-label="Повысить '+SN[i]+'">+</button>':'<em></em>')+'</div>';
  var wmh='<p class="pts">Владение оружием · до 10 уровня, +2,5% к урону оружия за уровень</p>';for(var wq=0;wq<WMF.length;wq++){var wf2=WMF[wq],wl=wmL(wf2),wx=C.wm&&C.wm[wf2]?C.wm[wf2].x:0;wmh+='<div class="row">'+icoBox(wf2,wl?'#ffc53d':'#5b6480')+'<span><strong>'+B[wf2].n+'</strong> · ур. '+wl+'/10 · урон +'+(wl*2.5)+'%<br><small style="color:#8f99b3">'+(wl>=10?'мастерство достигнуто':'до следующего: '+Math.floor(wx)+' / '+wmNeed(wl))+'</small></span></div>';}
- h+=wmh+'<p>Шанс маг. крита: '+D.mcrit+'% (от ПРН). Каждая единица ЛВК даёт +0,5% к шансу крита, ПРН — к магическому.</p><p>Восстановление ХП: '+D.regen+' в секунду вне боя, в бою — пятая часть.</p><button id="tr" class="sec2" style="margin:8px 0">Пассивное древо · очков: '+C.tp+'</button><button id="gr" class="sec2" style="margin:8px 0 8px 10px">Снаряжение</button><p>Золото: '+C.gold+'</p></div>';
+ h+='<p>Шанс маг. крита: '+D.mcrit+'% (от ПРН). Каждая единица ЛВК даёт +0,5% к шансу крита, ПРН — к магическому.</p><p>Восстановление ХП: '+D.regen+' в секунду вне боя, в бою — пятая часть.</p><p>Золото: '+C.gold+'</p></div>';
  h+='<div class="col"><p class="pts">Очки параметров: '+C.pp+' · не больше 20 в один</p>';
  for(i=0;i<SEC.length;i++){var k=SEC[i][0];h+='<div class="row"><span>'+SEC[i][1]+'</span><b>'+secVal(k,D)+'</b><i>'+C.sec[k]+'/20</i>'+(C.pp>0&&C.sec[k]<20?'<button class="pl" data-q="'+k+'" aria-label="Повысить '+SEC[i][1]+'">+</button>':'<em></em>')+'</div>';}
- h+='</div><div class="col wide"><p class="pts">Эссенции: '+C.ess.length+' из '+slots()+' слотов</p>';
+ h+='</div></div><div class="sh"'+(shTab==='wm'?'':' style="display:none"')+'><div class="col">'+wmh+'</div></div><div class="sh"'+(shTab==='sk'?'':' style="display:none"')+'><div class="col wide"><p class="pts">Эссенции: '+C.ess.length+' из '+slots()+' слотов</p>';
  if(!C.ess.length)h+='<p>Пока нет. Эссенция выпадает с рядового монстра с шансом 2%, с элитного — 10%.</p>';
  for(i=0;i<C.ess.length;i++){var ek=C.ess[i],e=ESS[ek];h+='<div class="row rowt">'+icoBox(essIco(ek),essCol(ek))+'<span><strong>'+e.name+'</strong>'+essTag(ek)+' · '+statTxt(e.st)+'<br>'+(e.skill?'Навык «'+SK[e.skill].name+'»: '+SK[e.skill].d+' · '+mpCost(e.skill)+' МП':e.pas)+'</span>'+'</div>';}
  var ac=actives();
@@ -1330,13 +1351,12 @@ function sheet(mode){
  if(stSel&&ST[stSel]){var sd=ST[stSel];h+='<p><strong style="color:#ffc53d">'+sd.name+'</strong> · '+(sd.tag?sd.tag.join(', '):'любой навык')+': '+sd.d+', стоимость МП +'+Math.round(sd.cost*100)+'%.<br>Нажмите на гнездо навыка, чтобы вставить камень. Подходящие гнёзда подсвечены.</p>';}
  if(ac.length&&!stSel)h+='<p>Выберите камень в сетке, затем гнездо навыка. Нажатие на гнездо без выбранного камня перебирает камни по кругу. Менять камни можно и в Лабиринте.</p>';
  h+='</div></div>';
- h+=mode==='run'?'<button id="go">Продолжить</button>':'<button id="go">Назад в город</button>';
  var sc=ui.scrollTop;box.innerHTML=h;ui.className='';ui.scrollTop=sc;
  var pl=box.querySelectorAll('.pl');
  for(i=0;i<pl.length;i++)pl[i].addEventListener('click',function(){var a=this.getAttribute('data-s'),q=this.getAttribute('data-q');
   if(a!==null&&C.sp>0){C.st[+a]++;C.sp--;}else if(q&&C.pp>0&&C.sec[q]<20){C.sec[q]++;C.pp--;}
   save();if(mode==='run')applyD(false);sheet(mode);});
- document.getElementById('tr').addEventListener('click',function(){treeOpen(mode);});on('gr',function(){gsel=null;gear(mode);});
+ navOn(mode);
  var rm=box.querySelectorAll('.rm');
  for(i=0;i<rm.length;i++)rm[i].addEventListener('click',function(){var k=this.getAttribute('data-e');if(C.bank<15){this.textContent='Нужно 15 камней маны';return;}
   C.bank-=15;C.ess.splice(C.ess.indexOf(k),1);if(ESS[k].skill)delete C.sock[ESS[k].skill];save();sheet(mode);});
@@ -1349,7 +1369,6 @@ function sheet(mode){
   arr[n]=cand[(cand.indexOf(cur)+1)%cand.length];C.sock[k]=arr;save();sheet(mode);});
  var stc=box.querySelectorAll('.stc');for(i=0;i<stc.length;i++)stc[i].addEventListener('click',function(){var id=this.getAttribute('data-st');stSel=stSel===id?null:id;sheet(mode);});
  var tst=document.getElementById('tst');if(tst)tst.addEventListener('click',function(){C.test=!C.test;save();sheet(mode);});
- document.getElementById('go').addEventListener('click',function(){if(mode==='run'){state='play';ui.className='hide';}else city();});
  var re=document.getElementById('re');
  if(re)re.addEventListener('click',function(){if(re.getAttribute('data-ok')){raceSelect();}else{re.setAttribute('data-ok','1');re.textContent='Стереть героя и начать заново?';}});
 }
@@ -1381,7 +1400,7 @@ function raceSelect(){
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.22 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.23 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
@@ -1903,7 +1922,7 @@ function skTip(sk){var S2=SK[sk];if(!S2)return;var W=Math.min(330,VW-40),x=VW-W-
  ctx.fillStyle='#ffc53d';for(i=0;i<sl.length;i++){ctx.fillText(sl[i],x+12,yy);yy+=16;}ctx.textAlign='center';}
 
 var last=0;
-function frame(ts){var dt=Math.max(0,Math.min(0.05,(ts-last)/1000||0));last=ts;if(state==='play')update(dt);draw();requestAnimationFrame(frame);}
+function frame(ts){var dt=Math.max(0,Math.min(0.05,(ts-last)/1000||0));last=ts;if(state==='play')update(dt);draw();fsPos();requestAnimationFrame(frame);}
 window.__game={stashS:stashS,getS:function(){return {secret:secret,map:map,chests:chests,hid:hid,seen:seen,vis:vis,MW:MW,AH:AH};},crack:crack,nextFloor:nextFloor,getF:function(){return {floor:floor,rift:rift,arena:arena,down:down,mons:mons,orbs:orbs};},gear:gear,smith:smith,equip:equip,genItem:genItem,genUnique:genUnique,B:B,wear:wear,city:city,gate:gate,guild:guild,alch:alch,temple:temple,treas:treas,saves:saves,recall:recall,finish:finish,NODES:NODES,canTake:canTake,canDrop:canDrop,treeOpen:treeOpen,resetM:function(){MC=null;},cast:cast,newChar:newChar,sheet:sheet,derive:derive,char:function(){return C;},start:start,update:update,get:function(){return {hero:hero,mons:mons,state:state,rooms:rooms,stones:stones,kills:kills,total:total};},attack:attack,dodge:dodge,input:input,ext:function(){return {traps:traps,chests:chests,drops:drops,closedF:closedF,timeLeft:timeLeft,floor:floor,shots:shots,swing:swing,down:down,portal:portal};},setTime:function(v){timeLeft=v;},gradeRoll:gradeRoll,doSkill:doSkill,orderItem:orderItem,ORDL:ORDL,ESS:ESS,TYPES:TYPES,FLOORS:FLOORS,SK:SK};
 menu();requestAnimationFrame(frame);
 })();
