@@ -202,19 +202,32 @@ var TYPES={
  comet:{name:'Кометный дух',ai:'gob',r:11,hp:58,spd:140,dmg:17,eva:50,def:5,st:[3,5],col:'#ffb454',charge:1,fireRes:0.4},
  vspider:{name:'Паук пустоты',ai:'sling',r:12,hp:62,spd:105,dmg:16,eva:45,def:15,st:[3,5],col:'#6a4aba',proj:'void',pull:1},
  eclipse:{name:'Затмение',ai:'slime',r:14,hp:90,spd:80,dmg:20,eva:40,def:10,st:[4,6],col:'#2a1a3a'},
+ shieldg:{name:'Гоблин-щитоносец',ai:'gob',r:12,hp:40,spd:85,dmg:9,eva:20,def:25,st:[1,3],col:'#6faa4d',shieldF:1,wind:0.4},
+ bfrog:{name:'Жаба-взрывун',ai:'slime',r:12,hp:30,spd:80,dmg:10,eva:20,def:0,st:[1,2],col:'#8ac04a',explode:'pois'},
+ troll:{name:'Пещерный тролль',ai:'gob',r:15,hp:90,spd:80,dmg:16,eva:15,def:15,st:[3,4],col:'#7a8a6a',regen:1,wind:0.45},
+ frostb:{name:'Ледяной фантом',ai:'gob',r:11,hp:36,spd:125,dmg:12,eva:40,def:0,st:[2,3],col:'#bfe8ff',explode:'ice'},
+ berserk:{name:'Культист-берсерк',ai:'gob',r:12,hp:60,spd:105,dmg:15,eva:30,def:10,st:[2,4],col:'#a0303a',enrage:1},
+ bonew:{name:'Костяной страж',ai:'gob',r:13,hp:70,spd:75,dmg:16,eva:20,def:40,st:[3,4],col:'#d8d1b4',shieldF:1,wind:0.4},
+ puffer:{name:'Иглобрюх',ai:'slime',r:13,hp:50,spd:75,dmg:14,eva:20,def:10,st:[2,4],col:'#e0c050',explode:'pois'},
+ alpha:{name:'Вожак стаи',ai:'gob',r:14,hp:80,spd:150,dmg:18,eva:40,def:10,st:[3,5],col:'#3a3a44',enrage:1},
+ magma:{name:'Магмовый слизень',ai:'slime',r:14,hp:80,spd:70,dmg:18,eva:10,def:20,st:[3,5],col:'#ff6a2a',explode:'fire',fireRes:0.6},
+ vtroll:{name:'Колосс Бездны',ai:'guard',r:19,hp:240,spd:55,dmg:36,eva:5,def:60,st:[4,6],col:'#5a3a9a',regen:1},
+ cbomb:{name:'Кристальная бомба',ai:'slime',r:12,hp:60,spd:85,dmg:18,eva:30,def:10,st:[3,4],col:'#d8f2ff',explode:'ice'},
+ mtroll:{name:'Болотный тролль',ai:'gob',r:16,hp:130,spd:80,dmg:22,eva:15,def:20,st:[3,5],col:'#4a6a3a',regen:1,wind:0.45},
+ starsh:{name:'Звёздный щитоносец',ai:'gob',r:13,hp:110,spd:85,dmg:22,eva:25,def:50,st:[3,5],col:'#9a8aff',shieldF:1,wind:0.4},
  rb:{name:'Владыка Бездны',ai:'boss',r:30,hp:1100,spd:75,dmg:30,eva:15,def:60,st:[60,90],col:'#ff5a2a'},
  boss:{name:'Страж разлома',ai:'boss',r:22,hp:520,spd:70,dmg:24,eva:10,def:30,st:[20,30],col:'#ffc53d'}
 };
-var FLOORS=[{n:'Мерцающие штольни',mech:'dark',t:['gob','gob','sling','slime','guard','gbrute','boar','rat'],el:'guard',c:'#11141f',note:'Темнота: круг света меньше обычного'},
- {n:'Гнилые топи',t:['wolf','wolf','shaman','toad','leech','mshroom','sprite'],el:'toad',c:'#101a14',note:'Топь замедляет, шаманы отравляют'},
- {n:'Каменные чертоги',t:['gnoll','gnoll','ogre','golem','kobold','minot','dwarf'],el:'golem',c:'#17161a',note:'Узкие коридоры и ловушки на полу'},
- {n:'Ледяной предел',t:['swolf','wyvern','spirit','yeti','icewisp','harpy'],el:'wyvern',c:'#101a22',note:'Холод снижает скорость бега на 12%'},
- {n:'Багровая цитадель',t:['garg','cult','vamp','bat','bat','bpriest','hemo'],el:'vamp',c:'#1c1016',note:'Монстры лечатся от своих ударов'},
- {n:'Пепельный некрополь',t:['skw','skw','ska','necro','dknight','ghoul','banshee','lich'],el:'dknight',c:'#16141a',note:'Некроманты поднимают мёртвых'},
- {n:'Затонувший храм',mech:'water',t:['naga','deep','siren','crab','jelly','triton','eel'],el:'crab',c:'#0f1a1c',note:'Вода по колено замедляет'},
- {n:'Сумрачный лес',mech:'dark',t:['assn','witch','treant','spider','spider','dryad'],el:'treant',c:'#0e140d',note:'Густой сумрак, убийцы выходят из тени'},
- {n:'Огненные кузни',mech:'traps',t:['hound','hound','imp','demon','golemf','salam'],el:'demon',c:'#1c120f',note:'Раскалённые плиты обжигают'},
- {n:'Преддверие Бездны',mech:'drain',t:['shade','voidw','archm','wraith','voidsp'],el:'archm',c:'#100e18',note:'Бездна пьёт силы: восстановление МП −30%'}];
+var FLOORS=[{n:'Мерцающие штольни',mech:'dark',t:['gob','gob','sling','slime','guard','gbrute','boar','rat','shieldg'],el:'guard',c:'#11141f',note:'Темнота: круг света меньше обычного'},
+ {n:'Гнилые топи',t:['wolf','wolf','shaman','toad','leech','mshroom','sprite','bfrog'],el:'toad',c:'#101a14',note:'Топь замедляет, шаманы отравляют'},
+ {n:'Каменные чертоги',t:['gnoll','gnoll','ogre','golem','kobold','minot','dwarf','troll'],el:'golem',c:'#17161a',note:'Узкие коридоры и ловушки на полу'},
+ {n:'Ледяной предел',t:['swolf','wyvern','spirit','yeti','icewisp','harpy','frostb'],el:'wyvern',c:'#101a22',note:'Холод снижает скорость бега на 12%'},
+ {n:'Багровая цитадель',t:['garg','cult','vamp','bat','bat','bpriest','hemo','berserk'],el:'vamp',c:'#1c1016',note:'Монстры лечатся от своих ударов'},
+ {n:'Пепельный некрополь',t:['skw','skw','ska','necro','dknight','ghoul','banshee','lich','bonew'],el:'dknight',c:'#16141a',note:'Некроманты поднимают мёртвых'},
+ {n:'Затонувший храм',mech:'water',t:['naga','deep','siren','crab','jelly','triton','eel','puffer'],el:'crab',c:'#0f1a1c',note:'Вода по колено замедляет'},
+ {n:'Сумрачный лес',mech:'dark',t:['assn','witch','treant','spider','spider','dryad','alpha'],el:'treant',c:'#0e140d',note:'Густой сумрак, убийцы выходят из тени'},
+ {n:'Огненные кузни',mech:'traps',t:['hound','hound','imp','demon','golemf','salam','magma'],el:'demon',c:'#1c120f',note:'Раскалённые плиты обжигают'},
+ {n:'Преддверие Бездны',mech:'drain',t:['shade','voidw','archm','wraith','voidsp','vtroll'],el:'archm',c:'#100e18',note:'Бездна пьёт силы: восстановление МП −30%'}];
 var HS=[1,1.6,2.4,3.4,4.6,6,7.6,9.5,11.6,14],DS=[1,1.4,1.9,2.5,3.2,4,4.9,5.9,7,8.3];
 var BOSS=[{n:'Король гоблинов',eff:null},{n:'Матерь топей',eff:'pois'},{n:'Каменный владыка',eff:null},{n:'Ледяная королева',eff:'ice'},{n:'Багровый лорд',eff:null},{n:'Повелитель костей',eff:'void'},{n:'Королева глубин',eff:'ice'},{n:'Сердце леса',eff:'pois'},{n:'Владыка горна',eff:'fire'},{n:'Глашатай Бездны',eff:'void'}];
 var ESS={
@@ -239,7 +252,7 @@ var ESS={
  b2:{name:'Сердце топей',st:[0,0,4,0,0,2],pas:'Уникальная. Восстановление ХП +60%, яд не действует',m:{regen:60,poisImm:1}},
  b3:{name:'Ядро владыки',st:[6,0,3,0,0,0],pas:'Уникальная. Физ. урон +12%, физ. защита +20%',m:{dmg:12,pdef:20}},
  b4:{name:'Слеза королевы',st:[0,0,0,5,3,0],pas:'Уникальная. Урон навыков +20%, перезарядка −10%',m:{skDmg:20,cdr:10}},
- b5:{name:'Кровь лорда',st:[4,0,0,0,0,4],pas:'Уникальная. 6% нанесённого урона возвращается в ХП, ХП +10%',m:{leechAll:6,hp:10}},
+ b5:{name:'Кровь лорда',st:[4,0,0,0,0,4],pas:'Уникальная. 4% нанесённого урона возвращается в ХП, ХП +10%',m:{leechAll:4,hp:10}},
  skw:{name:'Скелет-мечник',cls:'r',st:[3,0,2,0,0,0],skill:'warcry'},
  ska:{name:'Скелет-лучник',cls:'g',st:[0,3,0,0,1,0],skill:'volley'},
  necro:{name:'Некромант',cls:'b',st:[0,0,0,4,0,2],pas:'Пассив «Некромантия»: урон навыков +10%, МП +10%',m:{skDmg:10,mp:10}},
@@ -255,8 +268,8 @@ var ESS={
  imp:{name:'Бес-поджигатель',cls:'b',st:[0,1,0,4,2,0],skill:'meteor'},
  demon:{name:'Демон-берсерк',cls:'r',st:[5,0,1,-2,0,0],pas:'Пассив «Неистовство»: физ. урон +12%, шанс оглушения +6%',m:{dmg:12,stunC:6}},
  shade:{name:'Страж-тень',cls:'g',st:[0,5,0,0,2,0],pas:'Пассив «Тень»: уклонение +12%, сила крита +20%',m:{eva:12,critp:20}},
- voidw:{name:'Пожиратель',cls:'r',st:[4,0,4,0,0,0],pas:'Пассив «Голод Бездны»: 5% урона возвращается в ХП, ХП +8%',m:{leechAll:5,hp:8}},
- archm:{name:'Архимаг Бездны',cls:'b',st:[0,0,0,5,3,2],pas:'Пассив «Знание Бездны»: урон навыков +18%, перезарядка −8%',m:{skDmg:18,cdr:8}},
+ voidw:{name:'Пожиратель',cls:'r',st:[4,0,4,0,0,0],pas:'Пассив «Голод Бездны»: 3% урона возвращается в ХП, ХП +8%',m:{leechAll:3,hp:8}},
+ archm:{name:'Архимаг Бездны',cls:'b',st:[0,0,0,5,3,2],pas:'Пассив «Знание Бездны»: урон навыков +15%, перезарядка −6%',m:{skDmg:15,cdr:6}},
  gbrute:{name:'Гоблин-громила',st:[3,0,1,0,0,0],pas:'Пассив «Дубина»: урон обычной атаки +8%',m:{atkDmg:8}},
  leech:{name:'Трясинная пиявка',st:[0,0,2,0,0,1],pas:'Пассив «Присоска»: 2% урона возвращается в ХП',m:{leechAll:2}},
  kobold:{name:'Кобольд-подрывник',st:[0,2,0,1,0,0],pas:'Пассив «Порох»: урон навыков +6%',m:{skDmg:6}},
@@ -294,21 +307,34 @@ var ESS={
  bloat:{name:'Раздутый трупоед',cls:'r',st:[3,0,6,0,0,0],pas:'Пассив «Брюхо»: ХП +18%',m:{hp:18}},
  swarm:{name:'Гнилой рой',cls:'g',st:[0,5,0,0,1,0],pas:'Пассив «Рой»: скорость атаки +12%',m:{aspd:12}},
  hag:{name:'Болотная карга',cls:'b',st:[0,0,1,5,1,2],pas:'Пассив «Варево»: урон навыков +14%, восстановление МП +20%',m:{skDmg:14,mreg:20}},
- mire:{name:'Топяной великан',cls:'r',st:[5,-2,5,0,0,0],pas:'Пассив «Трясина»: 25% урона от ударов вблизи возвращается врагу',m:{thorns:25}},
+ mire:{name:'Топяной великан',cls:'r',st:[5,-2,5,0,0,0],pas:'Пассив «Трясина»: 15% урона от ударов вблизи возвращается врагу',m:{thorns:15}},
  astral:{name:'Астральный страж',cls:'r',st:[5,0,5,0,0,0],pas:'Пассив «Звёздный щит»: ХП +12%, физ. защита +12%',m:{hp:12,pdef:12}},
  starm:{name:'Звездочёт',cls:'b',st:[0,0,0,6,3,1],pas:'Пассив «Созвездие»: урон навыков +18%, каждый крит возвращает 3 МП',m:{skDmg:18,critMp:3}},
  comet:{name:'Кометный дух',cls:'r',st:[5,2,0,0,0,0],pas:'Пассив «Падение кометы»: физ. урон +12%, урон горения +40%',m:{dmg:12,burn:40}},
  vspider:{name:'Паук пустоты',cls:'g',st:[0,5,0,2,2,0],pas:'Пассив «Пустота»: сила крита +30%, 2% урона возвращается в ХП',m:{critp:30,leechAll:2}},
  eclipse:{name:'Затмение',cls:'b',st:[0,2,0,5,3,0],pas:'Пассив «Тьма»: перезарядка −10%, урон навыков +10%',m:{cdr:10,skDmg:10}},
+ shieldg:{name:'Гоблин-щитоносец',st:[1,0,2,0,0,0],pas:'Пассив «Стена щитов»: шанс блока +6%',m:{block:6,blockAmt:20}},
+ bfrog:{name:'Жаба-взрывун',st:[0,0,2,1,0,0],pas:'Пассив «Едкая кровь»: каждый удар с шансом 10% отравляет',m:{fireHit:10}},
+ troll:{name:'Пещерный тролль',st:[3,0,3,0,0,0],pas:'Пассив «Регенерация»: восстановление ХП +40%',m:{regen:40}},
+ frostb:{name:'Ледяной фантом',st:[0,2,0,2,1,0],pas:'Пассив «Иней»: каждый удар с шансом 15% замедляет',m:{frostHit:15}},
+ berserk:{name:'Культист-берсерк',st:[3,1,0,0,0,0],pas:'Пассив «Безумие»: урон по врагам ниже 30% ХП +15%',m:{execDmg:15}},
+ bonew:{name:'Костяной страж',cls:'r',st:[3,0,4,0,0,0],pas:'Пассив «Костяной щит»: шанс блока +8%, ЦП +15%',m:{block:8,blockAmt:25,cpP:15}},
+ puffer:{name:'Иглобрюх',cls:'r',st:[2,0,4,0,0,0],pas:'Пассив «Иглы»: 10% урона от ударов вблизи возвращается врагу',m:{thorns:10}},
+ alpha:{name:'Вожак стаи',cls:'g',st:[2,4,0,0,0,0],pas:'Пассив «Вожак»: урон по элитным и боссам +12%',m:{eliteDmg:12}},
+ magma:{name:'Магмовый слизень',cls:'r',st:[3,0,4,0,0,0],pas:'Пассив «Магма»: каждый удар с шансом 15% поджигает',m:{fireHit:15}},
+ vtroll:{name:'Колосс Бездны',cls:'r',st:[5,-1,6,0,0,0],pas:'Пассив «Бездонная плоть»: ХП +12%, восстановление ХП +50%',m:{hp:12,regen:50}},
+ cbomb:{name:'Кристальная бомба',cls:'b',st:[0,0,1,5,2,0],pas:'Пассив «Осколки льда»: радиус навыков +12%, урон навыков +8%',m:{area:12,skDmg:8}},
+ mtroll:{name:'Болотный тролль',cls:'r',st:[4,0,5,0,0,0],pas:'Пассив «Тина»: восстановление ХП +60%, ХП +6%',m:{regen:60,hp:6}},
+ starsh:{name:'Звёздный щитоносец',cls:'r',st:[3,0,6,0,0,0],pas:'Пассив «Звёздный щит»: шанс блока +10%, физ. защита +10%',m:{block:10,blockAmt:30,pdef:10}},
  b6:{name:'Корона некрополя',cls:'r',st:[4,0,4,0,0,2],pas:'Уникальная. ХП +12%, физ. защита +15%, 4% урона возвращается в ХП',m:{hp:12,pdef:15,leechAll:4}},
  b7:{name:'Жемчужина глубин',cls:'b',st:[0,0,0,6,4,2],pas:'Уникальная. Урон навыков +22%, восстановление МП +30%',m:{skDmg:22,mreg:30}},
  b8:{name:'Семя Древа',cls:'r',st:[2,2,6,0,0,0],pas:'Уникальная. ХП +15%, восстановление ХП +80%, яд не действует',m:{hp:15,regen:80,poisImm:1}},
- b9:{name:'Угли горна',cls:'r',st:[7,0,2,0,0,0],pas:'Уникальная. Физ. урон +18%, сила крита +20%',m:{dmg:18,critp:20}},
- b10:{name:'Око Бездны',cls:'g',st:[0,6,0,3,4,0],pas:'Уникальная. Шанс крита +5%, сила крита +30%, скорость атаки +10%',m:{crit:5,critp:30,aspd:10}}};
+ b9:{name:'Угли горна',cls:'r',st:[7,0,2,0,0,0],pas:'Уникальная. Физ. урон +15%, сила крита +15%',m:{dmg:15,critp:15}},
+ b10:{name:'Око Бездны',cls:'g',st:[0,6,0,3,4,0],pas:'Уникальная. Шанс крита +4%, сила крита +25%, скорость атаки +8%',m:{crit:4,critp:25,aspd:8}}};
 var BASEF=FLOORS.slice(),ALTF={
- 8:{n:'Хрустальные пещеры',mech:'traps',t:['cshard','cshard','cspider','prism','glimmer','cgolem'],el:'cgolem',c:'#0e1620',note:'Кристаллы-шипы и ледяной свет',pal:{f:'#24323e',f2:'#202d38',wf:'#2f4a5c',wt:'#7ab8d8',wl:'#1e2e3a'},mote:'190,235,255'},
- 9:{n:'Чумные топи',mech:'water',t:['plague','plague','bloat','swarm','hag','mire'],el:'mire',c:'#10160c',note:'Трясина по колено, ядовитые облака',pal:{f:'#26301c',f2:'#222b19',wf:'#344426',wt:'#5a7a3a',wl:'#1f2a16'},mote:'170,210,90'},
- 10:{n:'Звёздная обсерватория',mech:'drain',t:['astral','starm','comet','vspider','eclipse'],el:'astral',c:'#0c0a1a',note:'Звёзды пьют силы: восстановление МП −30%',pal:{f:'#1c1a30',f2:'#18162a',wf:'#2a2648',wt:'#7a6ad8',wl:'#16142a'},mote:'255,230,160'}};
+ 8:{n:'Хрустальные пещеры',mech:'traps',t:['cshard','cshard','cspider','prism','glimmer','cgolem','cbomb'],el:'cgolem',c:'#0e1620',note:'Кристаллы-шипы и ледяной свет',pal:{f:'#24323e',f2:'#202d38',wf:'#2f4a5c',wt:'#7ab8d8',wl:'#1e2e3a'},mote:'190,235,255'},
+ 9:{n:'Чумные топи',mech:'water',t:['plague','plague','bloat','swarm','hag','mire','mtroll'],el:'mire',c:'#10160c',note:'Трясина по колено, ядовитые облака',pal:{f:'#26301c',f2:'#222b19',wf:'#344426',wt:'#5a7a3a',wl:'#1f2a16'},mote:'170,210,90'},
+ 10:{n:'Звёздная обсерватория',mech:'drain',t:['astral','starm','comet','vspider','eclipse','starsh'],el:'astral',c:'#0c0a1a',note:'Звёзды пьют силы: восстановление МП −30%',pal:{f:'#1c1a30',f2:'#18162a',wf:'#2a2648',wt:'#7a6ad8',wl:'#16142a'},mote:'255,230,160'}};
 var CLSC={g:'#6fdc8c',b:'#4c8dff',r:'#e5484d'},CLSR={g:'111,220,140',b:'76,141,255',r:'229,72,77'},CLSN={g:'ловкач',b:'маг',r:'воин'};
 function essTag(k){var e=ESS[k];return e&&e.cls?' <span style="color:'+CLSC[e.cls]+'">· '+CLSN[e.cls]+'</span>':'';}
 var SK={
@@ -342,20 +368,20 @@ var ST={
  haste:{name:'Спешка',tag:null,cost:0.15,d:'перезарядка −20%'},
  leech:{name:'Пиявка',tag:['Удар'],cost:0.25,d:'3% урона возвращается в ХП'},
  echo:{name:'Отголосок',tag:['Заклинание'],cost:0.40,d:'навык повторяется второй раз с 60% урона'},
- power:{name:'Мощь',tag:null,cost:0.40,d:'урон навыка +30%'},
- conc:{name:'Концентрация',tag:['Площадь'],cost:0.20,d:'радиус −25%, урон +25%'},
- critS:{name:'Меткость',tag:null,cost:0.20,d:'шанс крита навыка +12%'},
+ power:{name:'Мощь',tag:null,cost:0.25,d:'урон навыка +10%'},
+ conc:{name:'Концентрация',tag:['Площадь'],cost:0.20,d:'радиус −25%, урон +15%'},
+ critS:{name:'Меткость',tag:null,cost:0.20,d:'шанс крита навыка +8%'},
  frostS:{name:'Стужа',tag:['Удар','Снаряд','Площадь'],cost:0.20,d:'попадания замедляют на 2 с'},
  poisS:{name:'Отрава',tag:['Удар','Снаряд'],cost:0.20,d:'попадания отравляют на 4 с'},
- stunS:{name:'Оглушение',tag:['Удар','Площадь'],cost:0.25,d:'25% шанс оглушить на 1 с'},
+ stunS:{name:'Оглушение',tag:['Удар','Площадь'],cost:0.25,d:'20% шанс оглушить на 1 с'},
  pierceS:{name:'Пронзание',tag:['Снаряд'],cost:0.25,d:'снаряды пробивают ещё 2 цели'},
  eff:{name:'Экономия',tag:null,cost:-0.30,d:'стоимость МП −30%, урон −10%'},
- wide2:{name:'Великий размах',tag:['Площадь'],cost:0.35,d:'радиус +60%',gr:1},
- haste2:{name:'Великая спешка',tag:null,cost:0.30,d:'перезарядка −35%',gr:1},
- leech2:{name:'Великая пиявка',tag:['Удар','Снаряд'],cost:0.35,d:'6% урона возвращается в ХП',gr:1},
+ wide2:{name:'Великий размах',tag:['Площадь'],cost:0.30,d:'радиус +40%',gr:1},
+ haste2:{name:'Великая спешка',tag:null,cost:0.30,d:'перезарядка −30%',gr:1},
+ leech2:{name:'Великая пиявка',tag:['Удар','Снаряд'],cost:0.35,d:'4% урона возвращается в ХП',gr:1},
  split2:{name:'Великий раскол',tag:['Снаряд'],cost:0.45,d:'+4 снаряда, урон каждого −40%',gr:1}};
 var NST=Object.keys(ST).length;
-function areaMul(sk){return (has(sk,'wide')?1.35:1)*(has(sk,'wide2')?1.6:1)*(has(sk,'conc')?0.75:1);}
+function areaMul(sk){return (has(sk,'wide')?1.35:1)*(has(sk,'wide2')?1.4:1)*(has(sk,'conc')?0.75:1);}
 function splitN(sk){return has(sk,'split2')?5:has(sk,'split')?3:1;}
 var SECT=[
  {n:'СИЛ',c:'#e5484d',p:'ABACABACABACAB',s:{A:['Физ. урон +4%',{dmg:4}],B:['+1 СИЛ',{st0:1}],C:['Урон обычной атаки +5%',{atkDmg:5}]},
@@ -384,7 +410,8 @@ var NODES=[],EDGES=[],ADJ=[];
   EDGES.push([k*20+9,((k+1)%6)*20+6]);}
  for(var n=0;n<120;n++)ADJ.push([]);EDGES.forEach(function(e){ADJ[e[0]].push(e[1]);ADJ[e[1]].push(e[0]);});})();
 var MC=null;
-function M(){if(MC)return MC;MC={};if(C&&C.tree)for(var i=0;i<C.tree.length;i++){var m=NODES[C.tree[i]].m;for(var k in m)MC[k]=(MC[k]||0)+m[k];}if(C&&C.ess)for(var e=0;e<C.ess.length;e++){var em=ESS[C.ess[e]].m;if(em)for(var ek in em)MC[ek]=(MC[ek]||0)+em[ek];}if(C&&C.eq)itemMods(MC);return MC;}
+function M(){if(MC)return MC;MC={};if(C&&C.tree)for(var i=0;i<C.tree.length;i++){var m=NODES[C.tree[i]].m;for(var k in m)MC[k]=(MC[k]||0)+m[k];}if(C&&C.ess)for(var e=0;e<C.ess.length;e++){var em=ESS[C.ess[e]].m;if(em)for(var ek in em)MC[ek]=(MC[ek]||0)+em[ek];}if(C&&C.eq)itemMods(MC);for(var ck in CAPS)if(MC[ck]>CAPS[ck])MC[ck]=CAPS[ck];return MC;}
+var CAPS={leechAll:8,cdr:40,skCrit:25,thorns:40,killHeal:4,freeCast:15,block:50,move:50,area:60,eva:80,aspd:80,arrows:2,critMp:6,fireHit:40,frostHit:50,stunC:40,bleedC:50,eliteDmg:40,skDmg:150,dmg:150,poisImm:1,bleedHeal:1,burnAura:1};
 function secCount(sc,skip){var c=0;for(var i=0;i<C.tree.length;i++){var n=NODES[C.tree[i]];if(n.sec===sc&&n.id!==skip&&n.kind!=='k')c++;}return c;}
 function canTake(id){var n=NODES[id];if(C.tree.indexOf(id)>=0)return false;if(n.kind==='k'&&secCount(n.sec,-1)<8)return false;if(n.idx===0)return true;for(var i=0;i<ADJ[id].length;i++)if(C.tree.indexOf(ADJ[id][i])>=0)return true;return false;}
 function canDrop(id){var rest=C.tree.filter(function(x){return x!==id;}),sn={},q=[],i;
@@ -433,7 +460,7 @@ function socks(sk){var a=C.sock[sk]||[],o=[];for(var i=0;i<sockN();i++)o.push(a[
 function has(sk,st){return socks(sk).indexOf(st)>=0;}
 function fits(st,sk){var t=ST[st].tag;if(!t)return true;for(var i=0;i<t.length;i++)if(SK[sk].tags.indexOf(t[i])>=0)return true;return false;}
 function mpCost(sk){var c=1,a=socks(sk);for(var i=0;i<a.length;i++)if(a[i])c+=ST[a[i]].cost;var t=M();return Math.max(1,Math.round(SK[sk].mp*c*(1-(t.cost||0)/100)*(t.kOver?2:1)));}
-function cdOf(sk){var t=M();return (100/((hero&&hero.cspd)||100))*SK[sk].cd*(has(sk,'haste')?0.8:1)*(has(sk,'haste2')?0.65:1)*Math.max(0.3,1-(t.cdr||0)/100)*(t.kRest?0.6:1);}
+function cdOf(sk){var t=M();return (100/((hero&&hero.cspd)||100))*SK[sk].cd*(has(sk,'haste')?0.8:1)*(has(sk,'haste2')?0.7:1)*Math.max(0.3,1-(t.cdr||0)/100)*(t.kRest?0.6:1);}
 function statTxt(st){var t=[];for(var i=0;i<6;i++)if(st[i])t.push((st[i]>0?'+':'−')+Math.abs(st[i])+' '+SN[i]);return t.join(', ');}
 var RACES={
  human:{name:'Человек',s:[22,22,22,22,22,22],d:'Ровный старт под любой билд'},
@@ -452,7 +479,7 @@ function newChar(r){C={race:r,lvl:1,xp:0,st:RACES[r].s.slice(),sp:0,pp:0,tp:0,se
 function need(l){return 200*l*l;}
 function derive(){var D=derive0(),t=M(),p=function(k){return 1+(t[k]||0)/100;};
  D.mp=Math.round(D.mp*p('mp'));D.hp=Math.round(D.hp*p('hp'))+(t.kBlood?Math.round(D.mp/2):0);
- D.acc=Math.round(D.acc*p('acc'))+(t.accF||0);D.eva=t.kStone?0:Math.max(0,Math.round(D.eva*p('eva'))+(t.evaF||0));D.crit=Math.round((D.crit+(t.crit||0))*p('critX')*10)/10;D.mcrit=Math.round((D.mcrit+(t.crit||0))*10)/10;D.cspd=Math.round(D.cspd*p('cspd'));D.critp+=t.critp||0;
+ D.acc=Math.round(D.acc*p('acc'))+(t.accF||0);D.eva=t.kStone?0:Math.max(0,Math.round(D.eva*p('eva'))+(t.evaF||0));D.crit=Math.min(60,Math.round((D.crit+(t.crit||0))*p('critX')*10)/10);D.mcrit=Math.min(60,Math.round((D.mcrit+(t.crit||0))*10)/10);D.cp=Math.round(D.cp*p('cpP'));D.cspd=Math.round(D.cspd*p('cspd'));D.critp+=t.critp||0;
  D.pdef=Math.round(D.pdef*p('pdef')*(t.kGhost?0.5:1));D.aspd=Math.round(D.aspd*p('aspd'));D.regen=Math.round(D.regen*p('regen')*10)/10;D.mreg=Math.round(D.mreg*p('mreg')*10)/10;D.spdM*=p('move');return D;}
 function derive0(){var l=C.lvl-1,s=[0,1,2,3,4,5].map(est),q=C.sec,m=function(i,k){return 1+(s[i]-20)*k;};
  return {hp:Math.round((100+30*l+12*q.hp)*m(2,0.03)),mp:Math.round((50+12*l+8*q.mp)*m(5,0.03)),cp:Math.round((40+15*l+10*q.cp)*m(2,0.03)),
@@ -590,6 +617,7 @@ function kill(m){
  kills++;sfx('kill');burst(m.x,m.y,m.col,m.elite||m.boss?26:10);C.kc[kd]=(C.kc[kd]||0)+1;
  var n=m.st[0]+ri(m.st[1]-m.st[0]+1);
  for(i=0;i<n;i++){var a=rnd(0,6.283),sv=rnd(30,110);items.push({x:m.x,y:m.y,vx:Math.cos(a)*sv,vy:Math.sin(a)*sv,t:0});}
+ if(T0.explode){ehz.push({x:m.x,y:m.y,r:72,arm:0.7,t:0.75,dmg:m.dmg*1.5,eff:T0.explode,tk:0,boom:1});}
  if(m.type==='slime'){for(var k=0;k<2;k++){var c=spawn('mini',m.x+rnd(-8,8),m.y+rnd(-8,8),false);c.state='chase';total++;}}
  if(m.elite)say(m.label+' повержен');
  var x1=m.boss?300*floor:m.elite?150*floor:(XP1[m.type]||(T0.ai==='guard'?80:60))*floor,xr=m.boss||m.elite?60*floor:(XPR[m.type]||(T0.ai==='guard'?18:T0.ai==='slime'?10:8))*floor;
@@ -612,13 +640,14 @@ function strike(m,mult,sk,magic){
  if(m.hp<=0)return 0;if(m.state==='idle')m.state='chase';
  var ch=clamp(85+(hero.acc-m.eva)*0.5,30,98);
  if(!magic&&Math.random()*100>ch){float(m.x,m.y-m.r-8,'мимо','#8f99b3');sfx('miss');return 0;}
- var t=M(),k=1+(t.dmg||0)/100;k*=sk?(1+(t.skDmg||0)/100)*(t.kOver?1.4:1)*(has(sk,'power')?1.3:1)*(has(sk,'conc')?1.25:1)*(has(sk,'eff')?0.9:1):(1+(t.atkDmg||0)/100)*(t.kRest?0.5:1);
- if(m.stun>0)k*=1+(t.stunDmg||0)/100;if(m.hp<m.mhp*0.3)k*=1+(t.execDmg||0)/100;if(t.kRage)k*=2-hero.hp/hero.mhp;if(t.rage30)k*=1+0.3*(1-hero.hp/hero.mhp);
- if(hero.buffT>0)k*=1.25;var wdd=hero.useOff?hero.wd2:hero.wd,wmm=hero.useOff?hero.wM2:hero.wM;var dmg=rnd(wdd[0],wdd[1])*(sk?(magic?hero.intM:hero.pM):wmm)*mult*k,crit=hero.ghost||Math.random()*100<(magic?hero.mcrit:hero.crit)+(sk?(t.skCrit||0)+(has(sk,'critS')?12:0):0);hero.ghost=false;if(crit)dmg*=hero.critp/100;
+ var t=M(),k=1+(t.dmg||0)/100;k*=sk?(1+(t.skDmg||0)/100)*(t.kOver?1.4:1)*(has(sk,'power')?1.1:1)*(has(sk,'conc')?1.15:1)*(has(sk,'eff')?0.9:1):(1+(t.atkDmg||0)/100)*(t.kRest?0.5:1);
+ if(m.stun>0)k*=1+(t.stunDmg||0)/100;if(t.eliteDmg&&(m.elite||m.boss||m.rb))k*=1+t.eliteDmg/100;if(m.hp<m.mhp*0.3)k*=1+(t.execDmg||0)/100;if(t.kRage)k*=2-hero.hp/hero.mhp;if(t.rage30)k*=1+0.3*(1-hero.hp/hero.mhp);
+ if(hero.buffT>0)k*=1.25;var wdd=hero.useOff?hero.wd2:hero.wd,wmm=hero.useOff?hero.wM2:hero.wM;var dmg=rnd(wdd[0],wdd[1])*(sk?(magic?hero.intM:hero.pM):wmm)*mult*k,crit=hero.ghost||Math.random()*100<(magic?hero.mcrit:hero.crit)+(sk?(t.skCrit||0)+(has(sk,'critS')?8:0):0);hero.ghost=false;if(crit)dmg*=hero.critp/100;
  dmg=Math.max(1,Math.round(dmg*100/(100+m.def*(m.sund>0?0.5:1))));
+ m.lastHit=elapsed;if(TYPES[m.type].shieldF&&m.stun<=0&&m.state!=='wind'){var sa=Math.atan2(hero.y-m.y,hero.x-m.x)-(m.ang===undefined?Math.atan2(hero.y-m.y,hero.x-m.x):m.ang);while(sa>Math.PI)sa-=6.283;while(sa<-Math.PI)sa+=6.283;if(Math.abs(sa)<0.9){dmg=Math.max(1,Math.round(dmg*0.35));if(elapsed-(m.blkT||0)>0.6){m.blkT=elapsed;float(m.x,m.y-m.r-20,'щит','#c9d1e6');}}}
  if(t.leechAll)heal(dmg*t.leechAll/100);
  if(t.fireHit&&Math.random()*100<t.fireHit)addDot(m,{dps:dmg*0.15*(1+(t.burn||0)/100),t:3,fi:1});if(t.frostHit&&Math.random()*100<t.frostHit)m.slow=Math.max(m.slow,2);if(crit&&t.critMp)hero.mp=Math.min(hero.mmp,hero.mp+t.critMp);
- if(sk){if(has(sk,'frostS'))m.slow=Math.max(m.slow,2);if(has(sk,'stunS')&&Math.random()<0.25)m.stun=1;if(has(sk,'poisS'))addDot(m,{dps:dmg*0.07,t:4,po:1});if(has(sk,'leech2'))heal(Math.max(1,Math.round(dmg*0.06)));}
+ if(sk){if(has(sk,'frostS'))m.slow=Math.max(m.slow,2);if(has(sk,'stunS')&&!m.boss&&!m.rb&&Math.random()<0.2)m.stun=1;if(has(sk,'poisS'))addDot(m,{dps:dmg*0.07,t:4,po:1});if(has(sk,'leech2'))heal(Math.max(1,Math.round(dmg*0.04)));}
  sfx(crit?'crit':'hit');m.hp-=dmg;if(m.hp<=0&&!m.kh){m.kh=1;if(t.killHeal)heal(hero.mhp*t.killHeal/100);}m.flash=0.12;float(m.x,m.y-m.r-8,''+dmg,crit?'#ffc53d':'#f4f7ff',crit);
  if(sk){if(sk==='cloud'&&!m.dots.some(function(q){return q.po;}))addDot(m,{dps:dmg*0.1,t:2,po:1});if(sk==='rot')addDot(m,{dps:dmg*0.2,t:4,po:1});if(has(sk,'fire')||sk==='meteor')addDot(m,{dps:dmg*0.2*(1+(t.burn||0)/100),t:3,fi:1});
   if(has(sk,'bleed')&&Math.random()<0.6*hero.strC)addDot(m,{dps:dmg*0.15,t:4,bl:1});
@@ -816,36 +845,36 @@ var B={
  rgold:{n:'Золотое кольцо',slot:'r',sc:'r',jw:1,m:{rar:15}},rcoin:{n:'Кольцо менялы',slot:'r',sc:'r',jw:1,m:{gold:15}},riron:{n:'Железное кольцо',slot:'r',sc:'r',jw:1,m:{dmg:4}},rlaz:{n:'Лазуритовое кольцо',slot:'r',sc:'r',jw:1,m:{mp:8}},
  aamb:{n:'Янтарный амулет',slot:'am',sc:'am',jw:1,m:{st0:2}},ajade:{n:'Нефритовый амулет',slot:'am',sc:'am',jw:1,m:{st1:2}},alap:{n:'Лазурный амулет',slot:'am',sc:'am',jw:1,m:{st3:2}},ablood:{n:'Амулет-кровавик',slot:'am',sc:'am',jw:1,m:{hp:8}},astar:{n:'Звёздный амулет',slot:'am',sc:'am',jw:1,m:{st0:1,st1:1,st2:1,st3:1,st4:1,st5:1}}};
 var BW=['sword','axe','dagger','wand','gsword','gaxe','spear','bow','staff'],BO=['shield','sigil','quiver'],BA=['armor','helm','gloves','boots'],BJ=['rgold','rcoin','riron','rlaz','aamb','ajade','alap','ablood','astar'];
-var PERK={dmg:[4,'w,gl,r'],aspd:[3,'w,gl'],crit:[1,'w,h,r,am'],critp:[6,'w,am'],acc:[5,'w,h,gl,r'],eva:[5,'a,b,r'],hp:[4,'a,h,am,r,o'],mp:[5,'h,am,r'],pdef:[6,'a,h,gl,b,o'],move:[3,'b'],regen:[8,'a,am'],mreg:[8,'h,am,r'],rar:[5,'r,am'],gold:[6,'r,am'],cdr:[3,'h,am'],skDmg:[4,'w,am'],dual:[6,'gl'],st0:[1,'*'],st1:[1,'*'],st2:[1,'*'],st3:[1,'*'],st4:[1,'*'],st5:[1,'*']};
-var LBL={dmg:'Физ. урон',aspd:'Скорость атаки',crit:'Шанс крита',critp:'Сила крита',acc:'Точность',eva:'Уклонение',hp:'ХП',mp:'МП',pdef:'Физ. защита',move:'Скорость бега',regen:'Восстановление ХП',mreg:'Восстановление МП',rar:'Шанс найти качественные вещи',gold:'Золото за добычу',skDmg:'Урон навыков',stunC:'Шанс оглушения',bleedC:'Шанс кровотечения',block:'Шанс блока',blockAmt:'Блок урона',wdmg:'Урон оружия',mdmg:'Маг. урон',cspd:'Скорость каста',dual:'Урон второй руки'};
+var PERK={dmg:[4,'w,gl,r'],aspd:[3,'w,gl'],crit:[1,'w,h,r,am'],critp:[6,'w,am'],acc:[5,'w,h,gl,r'],eva:[5,'a,b,r'],hp:[4,'a,h,am,r,o'],mp:[5,'h,am,r'],pdef:[6,'a,h,gl,b,o'],move:[3,'b'],regen:[8,'a,am'],mreg:[8,'h,am,r'],rar:[5,'r,am'],gold:[6,'r,am'],cdr:[3,'h,am'],skDmg:[4,'w,am'],dual:[6,'gl'],thorns:[3,'a,o,b'],killHeal:[0.4,'r,am,gl'],eliteDmg:[4,'w,r,am'],fireHit:[3,'w,gl'],frostHit:[3,'w,b'],critMp:[0.5,'w,h,am'],execDmg:[5,'w,gl'],stunC:[2,'w,gl'],bleedC:[2,'w,gl'],area:[3,'h,am'],flaskHeal:[6,'a,am'],cpP:[5,'a,h,b,o'],st0:[1,'*'],st1:[1,'*'],st2:[1,'*'],st3:[1,'*'],st4:[1,'*'],st5:[1,'*']};
+var LBL={thorns:'Возврат урона вблизи',killHeal:'ХП за убийство',eliteDmg:'Урон по элитным и боссам',fireHit:'Шанс поджога',frostHit:'Шанс замедления',execDmg:'Урон по врагам ниже 30% ХП',area:'Радиус навыков',flaskHeal:'Лечение флаконом',cpP:'ЦП',dmg:'Физ. урон',aspd:'Скорость атаки',crit:'Шанс крита',critp:'Сила крита',acc:'Точность',eva:'Уклонение',hp:'ХП',mp:'МП',pdef:'Физ. защита',move:'Скорость бега',regen:'Восстановление ХП',mreg:'Восстановление МП',rar:'Шанс найти качественные вещи',gold:'Золото за добычу',skDmg:'Урон навыков',stunC:'Шанс оглушения',bleedC:'Шанс кровотечения',block:'Шанс блока',blockAmt:'Блок урона',wdmg:'Урон оружия',mdmg:'Маг. урон',cspd:'Скорость каста',dual:'Урон второй руки'};
 var UNI={uquiver:{n:'Колчан Роя',b:'quiver',d:'Каждый выстрел из лука выпускает на 1 стрелу больше',m:{arrows:1}},
- udagger:{n:'Кровопийца',b:'dagger',d:'Шанс кровотечения +25%. Урон любого кровотечения лечит владельца',m:{bleedC:25,bleedHeal:1}},
+ udagger:{n:'Кровопийца',b:'dagger',d:'Шанс кровотечения +20%. Половина урона кровотечения лечит владельца',m:{bleedC:20,bleedHeal:1}},
  usword:{n:'Клятвопреступник',b:'sword',d:'20% шанс при ударе на 4 с вдвое снизить защиту врага и на 30% его урон',m:{sunder:20}},
  uaxe:{n:'Голодный топор',b:'axe',d:'Шанс оглушения +15%. Урон по оглушённым +40%',m:{stunC:15,stunDmg:40}},
  uwand:{n:'Перо феникса',b:'wand',d:'Каждый удар с шансом 25% поджигает цель. Урон горения +50%',m:{fireHit:25,burn:50}},
- ugsword:{n:'Палач',b:'gsword',d:'Урон по врагам ниже 30% ХП +60%. Сила крита +30%',m:{execDmg:60,critp:30}},
+ ugsword:{n:'Палач',b:'gsword',d:'Урон по врагам ниже 30% ХП +40%. Сила крита +20%',m:{execDmg:40,critp:20}},
  ugaxe:{n:'Жнец бури',b:'gaxe',d:'Радиус навыков +25%, шанс оглушения +10%, скорость атаки +10%',m:{area:25,stunC:10,aspd:10}},
  uspear:{n:'Зуб левиафана',b:'spear',d:'Каждый удар с шансом 35% замедляет врага на 2 с. Точность +20%',m:{frostHit:35,acc:20}},
- ubow:{n:'Шёпот ветра',b:'bow',d:'Скорость атаки +20%, шанс крита +8%',m:{aspd:20,crit:8}},
- ustaff:{n:'Посох Бездны',b:'staff',d:'Урон навыков +30%. Каждый крит возвращает 5 МП. МП +20%',m:{skDmg:30,critMp:5,mp:20}},
- ushield:{n:'Колючая твердыня',b:'shield',d:'30% урона от ударов вблизи возвращается врагу. Шанс блока +10%',m:{thorns:30,block:10}},
+ ubow:{n:'Шёпот ветра',b:'bow',d:'Скорость атаки +15%, шанс крита +5%',m:{aspd:15,crit:5}},
+ ustaff:{n:'Посох Бездны',b:'staff',d:'Урон навыков +20%. Каждый крит возвращает 3 МП. МП +15%',m:{skDmg:20,critMp:3,mp:15}},
+ ushield:{n:'Колючая твердыня',b:'shield',d:'20% урона от ударов вблизи возвращается врагу. Шанс блока +8%',m:{thorns:20,block:8}},
  usigil:{n:'Око смотрителя',b:'sigil',d:'Перезарядка навыков −15%, восстановление МП +50%',m:{cdr:15,mreg:50}},
  uquiv2:{n:'Колчан Колосса',b:'quiver',d:'Урон обычной атаки +25%, шанс крита +4%',m:{atkDmg:25,crit:4}},
- uarmor:{n:'Шкура дракона',b:'armor',d:'ХП +20%, физ. защита +20%, яд не действует',m:{hp:20,pdef:20,poisImm:1}},
+ uarmor:{n:'Шкура дракона',b:'armor',d:'ХП +15%, физ. защита +15%, яд не действует',m:{hp:15,pdef:15,poisImm:1}},
  uhelm:{n:'Венец полководца',b:'helm',d:'Физ. урон +12%, урон навыков +12%, шанс крита +3%',m:{dmg:12,skDmg:12,crit:3}},
- ugloves:{n:'Хватка душителя',b:'gloves',d:'4% любого урона возвращается в ХП, скорость атаки +12%',m:{leechAll:4,aspd:12}},
- uboots:{n:'Поступь призрака',b:'boots',d:'Скорость бега +20%, уклонение +20%',m:{move:20,eva:20}},
- uring:{n:'Перстень жатвы',b:'rgold',d:'Каждое убийство восстанавливает 5% ХП. Шанс уникальных вещей +30%',m:{killHeal:5,rar:30}},
+ ugloves:{n:'Хватка душителя',b:'gloves',d:'3% любого урона возвращается в ХП, скорость атаки +10%',m:{leechAll:3,aspd:10}},
+ uboots:{n:'Поступь призрака',b:'boots',d:'Скорость бега +15%, уклонение +15%',m:{move:15,eva:15}},
+ uring:{n:'Перстень жатвы',b:'rgold',d:'Каждое убийство восстанавливает 2% ХП. Шанс уникальных вещей +25%',m:{killHeal:2,rar:25}},
  uring2:{n:'Печать равновесия',b:'riron',d:'+3 ко всем характеристикам',m:{st0:3,st1:3,st2:3,st3:3,st4:3,st5:3}},
- uamul:{n:'Сердце бури',b:'aamb',d:'Урон навыков +15%, перезарядка −10%, 10% шанс сотворить навык бесплатно',m:{skDmg:15,cdr:10,freeCast:10}},
- uamul2:{n:'Слеза святой',b:'ajade',d:'ХП +15%, восстановление ХП +100%, лечение флаконом +30%',m:{hp:15,regen:100,flaskHeal:30}}};
+ uamul:{n:'Сердце бури',b:'aamb',d:'Урон навыков +15%, перезарядка −10%, 8% шанс сотворить навык бесплатно',m:{skDmg:12,cdr:8,freeCast:8}},
+ uamul2:{n:'Слеза святой',b:'ajade',d:'ХП +12%, восстановление ХП +60%, лечение флаконом +25%',m:{hp:12,regen:60,flaskHeal:25}}};
 function modTxt(k,v){
  if(k.charAt(0)==='s'&&k.charAt(1)==='t'&&k.length===3)return (v>0?'+':'−')+Math.abs(v)+' '+SN[+k.charAt(2)];
- if(k==='cdr')return 'Перезарядка навыков −'+v+'%';if(k==='critX')return 'Шанс крита ×'+(1+v/100);
+ if(k==='cdr')return 'Перезарядка навыков −'+v+'%';if(k==='critMp')return 'МП за крит +'+v;if(k==='critX')return 'Шанс крита ×'+(1+v/100);
  if(k==='accF')return 'Точность '+(v>0?'+':'−')+Math.abs(v);if(k==='evaF')return 'Уклонение '+(v>0?'+':'−')+Math.abs(v);
  return (LBL[k]||k)+' '+(v>0?'+':'−')+Math.abs(v)+'%';}
 function gm(it){return GM[it.g]*(1+0.08*(it.up||0));}
-function works(it){return !!it&&(it.st||it.u||it.d>0);}
+function works(it){return !!it;}
 function itName(it){return (it.u?UNI[it.u].n:B[it.b].n)+(it.up?' +'+it.up:'')+' ['+GN[it.g]+']'+(it.st?' · казённое':' · '+QN[it.q]);}
 function offMods(it){var b=B[it.b];return b.slot==='w'?(b.fam==='sword'?{evaF:-6}:{evaF:-4,bleedC:8,aspd:5}):b.m;}
 function itDesc(it,asOff){var b=B[it.b],t=[],k,m=asOff?offMods(it):b.m;
@@ -856,7 +885,6 @@ function itDesc(it,asOff){var b=B[it.b],t=[],k,m=asOff?offMods(it):b.m;
  if(it.qv)t.push(modTxt(it.qv[0],it.qv[1]));
  for(var i=0;i<it.pk.length;i++)t.push(modTxt(it.pk[i][0],it.pk[i][1]));
  if(it.u)t.push('<span style="color:#ffc53d">'+UNI[it.u].d+'</span>');
- t.push(it.st||it.u?'не ломается':'прочность '+it.d+' из '+it.md+(it.d<=0?' — сломано, не работает':''));
  return t.join(' · ');}
 function itemMods(acc){var s,k;for(s in C.eq){var it=C.eq[s];if(!works(it))continue;var b=B[it.b],m=s==='o'?offMods(it):b.m;
   for(k in m)acc[k]=(acc[k]||0)+(b.jw?Math.round(m[k]*PM[it.g]):m[k]);
@@ -1015,7 +1043,7 @@ function gear(mode,msgT){
 }
 var ssel=null;
 function stashS(msgT){
- var i,h=head('Сундук')+'<p>Вещи в сундуке не теряются при смерти. Вмещает 40 предметов.</p><div class="inv"><div><p class="pts">Сумка: '+C.bag.length+' из 20</p><div class="bagg">';
+ var i,h=head('Сундук')+'<p>Сундук хранит вещи между спусками. Вмещает 40 предметов. Если герой погибнет, сундук пропадёт вместе с ним.</p><div class="inv"><div><p class="pts">Сумка: '+C.bag.length+' из 20</p><div class="bagg">';
  for(i=0;i<Math.max(20,C.bag.length);i++)h+=cell(C.bag[i]||null,'data-b="'+i+'"','',!!ssel&&ssel.b===i);
  h+='</div></div><div><p class="pts">Сундук: '+C.stash.length+' из 40</p><div class="bagg">';
  for(i=0;i<40;i++)h+=cell(C.stash[i]||null,'data-t="'+i+'"','',!!ssel&&ssel.t===i);
@@ -1042,9 +1070,6 @@ function smith(msgT){
  for(i=0;i<SLOTS.length;i++){var iu=C.eq[SLOTS[i][0]];if(iu&&!iu.st&&(B[iu.b].dmg||B[iu.b].def)&&(iu.up||0)<upMax(iu)){anyU=true;var nu=(iu.up||0)+1;h+=itRow(iu,'<button class="pb up2" data-s="'+SLOTS[i][0]+'">До +'+nu+' · '+upCost(iu)+'<br><small>успех '+UPC[nu-1]+'%'+(nu>=6?' · поломка 25%':'')+'</small></button>',SLOTS[i][0]==='o');}}
  if(!anyU)h+='<p>Улучшать нечего. Улучшаются надетые оружие, щиты и броня, кроме казённых. Каждый уровень даёт +8% к урону или защите. Броня и щиты — до +5, оружие — до +10.</p>';
  h+='<p>С +6 заточка опасна: в 25% попыток оружие ломается и исчезает. С +5 оружие светится: белым, ярко-белым на +6, голубым на +7, синим на +8, бледно-красным на +9 и красным на +10.</p>';
- h+='</div><p class="pts">Починка надетого</p><div class="lst">';
- for(i=0;i<SLOTS.length;i++){var it=C.eq[SLOTS[i][0]];if(it&&!it.st&&!it.u&&it.d<it.md){any=true;h+=itRow(it,'<button class="pb rp" data-s="'+SLOTS[i][0]+'">Починить · '+repairC(it)+'</button>',SLOTS[i][0]==='o');}}
- if(!any)h+='<p>Чинить нечего. Ремонт восстанавливает прочность до максимума, сам максимум не возвращается.</p>';
  h+='</div><p class="pts">Продать из сумки</p><div class="lst">';
  if(!C.bag.length)h+='<p>Сумка пуста.</p>';
  for(i=0;i<C.bag.length;i++)h+=itRow(C.bag[i],'<button class="pb sl" data-i="'+i+'">'+(C.bag[i].st?'Сдать даром':'Продать · '+sellV(C.bag[i]))+'</button>');
@@ -1075,9 +1100,12 @@ function finish(alive){
   if(cut)h+='<p class="pts">Казначейство забрало в счёт долга '+cut+' золота. Долг погашен.</p>';
   else if(C.debt)h+='<p class="pts">Добычи нет, долг перед Казначейством остаётся.</p>';
   if(rank()>r0)h+='<p class="pts">Новый ранг Гильдии: '+RANKS[rank()-1]+'. Десятина Врат теперь '+tax()+' золота.</p>';}
- else{var lostI=0;for(i2=C.bag.length-1;i2>=0;i2--)if(C.bag[i2].n){C.bag.splice(i2,1);lostI++;}var broke=wear();
-  var lostV=Math.min(runV,C.vess.length);if(lostV)C.vess.splice(C.vess.length-lostV,lostV);
-  h='<h2>Вы погибли</h2><p class="stat">Добыча потеряна: '+stones+' камней маны'+(lostV?', эссенций в сосудах: '+lostV:'')+'</p><p>Уровень, опыт и поглощённые эссенции сохранены.</p>'+(lostI?'<p>Найденные за спуск предметы потеряны: '+lostI+'.</p>':'')+'<p>Надетое снаряжение потеряло прочность.'+(broke.length?' Разрушено: '+broke.join(', ')+'.':'')+'</p>';}
+ else{var hall=[];try{hall=JSON.parse(localStorage.getItem('lv_hall')||'[]');}catch(e){}
+  hall.unshift({r:C.race,l:C.lvl,f:floor,k:(C.kc&&Object.keys(C.kc).reduce(function(a,b){return a+C.kc[b];},0))||0,e:C.ess.slice(),d:Date.now(),w:C.eq.w?itName(C.eq.w):'кулаки'});hall=hall.slice(0,20);
+  try{localStorage.setItem('lv_hall',JSON.stringify(hall));localStorage.removeItem('lv_char');}catch(e){}
+  h='<h2>Герой погиб навсегда</h2><p class="stat">'+RACES[C.race].name+' · уровень '+C.lvl+' · пал на этаже '+floor+'</p><p>Лабиринт забирает всё: снаряжение, сундук, золото и эссенции. Найдите новый билд и дойдите до Владыки Бездны.</p>';
+  h+='<p>Убито монстров за спуск: '+kills+' · время в Лабиринте: '+tm+'</p><button id="go">Новый герой</button>';
+  box.innerHTML=h;ui.className='';ui.scrollTop=0;C=null;MC=null;on('go',raceSelect);return;}
  restock();save();
  h+='<p>Убито монстров: '+kills+' из '+total+' · глубина: этаж '+floor+' · время в Лабиринте: '+tm+'</p><button id="go">В город</button>';
  box.innerHTML=h;ui.className='';ui.scrollTop=0;on('go',city);
@@ -1102,7 +1130,7 @@ function gate(){
 }
 var BEST={gob:'Быстрый удар вблизи после короткого замаха.',sling:'Держит дистанцию и кидает камни. От снаряда спасает перекат.',slime:'Прыгает издалека. После смерти распадается на двух слизнёков.',mini:'Мелкий и быстрый, прыгает как слизень.',guard:'Бьёт по площади: красная зона показывает удар заранее. Защита 40 срезает ваш урон.',elite:'Сидит в дальней комнате. Удар по площади шире и сильнее, чем у обычного стража.'};
 var BAI={gob:'Бьёт вблизи после короткого замаха.',sling:'Держит дистанцию и стреляет. От снаряда спасает перекат.',slime:'Прыгает издалека.',guard:'Бьёт по площади: красная зона показывает удар заранее.'};
-var BX={rat:' Очень быстрая.',sprite:' Кольцо ядовитых снарядов.',harpy:' Появляется за спиной.',hemo:' Таранит с разбега.',lich:' Поднимает скелетов, стреляет двумя ледяными снарядами.',eel:' Таранит с разбега.',cspider:' Снаряд замедляет.',cgolem:' Таранит, бьёт и во время замаха.',prism:' Кольцо из 10 ледяных снарядов.',glimmer:' Появляется за спиной.',plague:' Укус отравляет.',bloat:' Укус отравляет.',swarm:' Очень быстрый.',hag:' Ядовитые облака и лечение союзников.',mire:' Таранит с разбега.',starm:' Веер из 5 снарядов Бездны.',comet:' Таранит с разбега.',vspider:' Паутина подтягивает к нему.',eclipse:' Прыгает издалека.',boar:' С разбега таранит, удар сильнее и замедляет.',mshroom:' Отравленное облако под ногами героя.',minot:' Таранит с разбега, бьёт и во время замаха.',icewisp:' Выпускает кольцо ледяных снарядов.',bpriest:' Лечит раненых союзников.',banshee:' Кольцо снарядов, выжигающих МП.',triton:' Гарпун подтягивает героя к нему.',dryad:' Лечит союзников, снаряд отравляет.',salam:' Огненная лужа под ногами героя.',voidsp:' Появляется за спиной и выпускает кольцо Бездны.',leech:' Укус отравляет.',ghoul:' Укус отравляет.',kobold:' Снаряд поджигает.',spider:' Паутина замедляет.',golemf:' Удар поджигает.',wraith:' Исчезает и появляется у вас за спиной.',jelly:' Удар замедляет.',necro:' Поднимает скелетов, снаряд выжигает МП.',ska:' Стреляет чаще других.',assn:' Исчезает и появляется у вас за спиной.',shade:' Исчезает и появляется у вас за спиной.',imp:' Снаряд поджигает.',archm:' Выпускает три снаряда, они выжигают МП.',siren:' Снаряд замедляет.',witch:' Снаряд отравляет.',naga:' Долгий замах, сильный удар.',demon:' Долгий замах, очень сильный удар.',skm:' Его поднимает некромант.',slime:' После смерти распадается на двух слизнёков.',shaman:' Его снаряд отравляет на 4 секунды.',wyvern:' Её снаряд замедляет на 3 секунды.',spirit:' Удар замедляет.',vamp:' Лечится от своих ударов.',mar:' Человек-искатель: его удары сначала снимают ЦП. Сидит в засаде в коридорах, обычно не один.',marb:' Человек-искатель: стреляет издалека, урон сначала снимает ЦП.',guard:' Защита 40 срезает ваш урон.',golem:' Защита 60 срезает ваш урон.',ogre:' Бьёт медленно, но тяжело.'};
+var BX={shieldg:' Щит спереди гасит 65% урона: бейте сбоку, сзади или во время его замаха.',bfrog:' После смерти взрывается ядом: отойдите.',troll:' Регенерирует, если его не бить. Огонь останавливает регенерацию.',frostb:' После смерти взрывается льдом.',berserk:' На низком ХП впадает в ярость.',bonew:' Щит спереди гасит 65% урона.',puffer:' После смерти взрывается ядом.',alpha:' На низком ХП впадает в ярость.',magma:' После смерти взрывается огнём.',vtroll:' Регенерирует, огонь её останавливает.',cbomb:' После смерти взрывается льдом.',mtroll:' Регенерирует, огонь её останавливает.',starsh:' Щит спереди гасит 65% урона.',rat:' Очень быстрая.',sprite:' Кольцо ядовитых снарядов.',harpy:' Появляется за спиной.',hemo:' Таранит с разбега.',lich:' Поднимает скелетов, стреляет двумя ледяными снарядами.',eel:' Таранит с разбега.',cspider:' Снаряд замедляет.',cgolem:' Таранит, бьёт и во время замаха.',prism:' Кольцо из 10 ледяных снарядов.',glimmer:' Появляется за спиной.',plague:' Укус отравляет.',bloat:' Укус отравляет.',swarm:' Очень быстрый.',hag:' Ядовитые облака и лечение союзников.',mire:' Таранит с разбега.',starm:' Веер из 5 снарядов Бездны.',comet:' Таранит с разбега.',vspider:' Паутина подтягивает к нему.',eclipse:' Прыгает издалека.',boar:' С разбега таранит, удар сильнее и замедляет.',mshroom:' Отравленное облако под ногами героя.',minot:' Таранит с разбега, бьёт и во время замаха.',icewisp:' Выпускает кольцо ледяных снарядов.',bpriest:' Лечит раненых союзников.',banshee:' Кольцо снарядов, выжигающих МП.',triton:' Гарпун подтягивает героя к нему.',dryad:' Лечит союзников, снаряд отравляет.',salam:' Огненная лужа под ногами героя.',voidsp:' Появляется за спиной и выпускает кольцо Бездны.',leech:' Укус отравляет.',ghoul:' Укус отравляет.',kobold:' Снаряд поджигает.',spider:' Паутина замедляет.',golemf:' Удар поджигает.',wraith:' Исчезает и появляется у вас за спиной.',jelly:' Удар замедляет.',necro:' Поднимает скелетов, снаряд выжигает МП.',ska:' Стреляет чаще других.',assn:' Исчезает и появляется у вас за спиной.',shade:' Исчезает и появляется у вас за спиной.',imp:' Снаряд поджигает.',archm:' Выпускает три снаряда, они выжигают МП.',siren:' Снаряд замедляет.',witch:' Снаряд отравляет.',naga:' Долгий замах, сильный удар.',demon:' Долгий замах, очень сильный удар.',skm:' Его поднимает некромант.',slime:' После смерти распадается на двух слизнёков.',shaman:' Его снаряд отравляет на 4 секунды.',wyvern:' Её снаряд замедляет на 3 секунды.',spirit:' Удар замедляет.',vamp:' Лечится от своих ударов.',mar:' Человек-искатель: его удары сначала снимают ЦП. Сидит в засаде в коридорах, обычно не один.',marb:' Человек-искатель: стреляет издалека, урон сначала снимает ЦП.',guard:' Защита 40 срезает ваш урон.',golem:' Защита 60 срезает ваш урон.',ogre:' Бьёт медленно, но тяжело.'};
 var MICO={};
 function monIcon(k){if(MICO[k]!==undefined)return MICO[k];var u='';try{var cc=document.createElement('canvas');cc.width=cc.height=96;var c2=cc.getContext('2d');if(c2&&cc.toDataURL){var oc=ctx;ctx=c2;var t=TYPES[k],sc=Math.min(2.6,32/Math.max(10,t.r));ctx.translate(44,50);ctx.scale(sc,sc);
  drawMon({type:k,x:0,y:0,r:t.r,hp:1,mhp:1,state:'idle',ang:-0.6,flash:0,dots:[],label:'',trail:[{x:0,y:0},{x:-8,y:6},{x:-16,y:10},{x:-24,y:12}]},3);ctx=oc;u=cc.toDataURL();}}catch(e){u='';}MICO[k]=u;return u;}
@@ -1110,7 +1138,7 @@ function monImg(k,dim){var u=monIcon(k);return u?'<img src="'+u+'" width="48" he
 function guild(){
  var r=rank(),h=head('Гильдия искателей')+'<p>Ранг: <strong style="color:#f4f7ff">'+RANKS[r-1]+'</strong> · сдано добычи на '+C.earned+' золота'+(r<5?' · до следующего ранга: '+(RT[r]-C.earned):'')+'</p><p>Гильдия покупает камни маны по 10 золота. С рангом растёт Десятина Врат.</p><p class="pts">Бестиарий</p><div class="lst">',f,i;
  var FVL=[];for(f=1;f<=BASEF.length;f++){FVL.push([f,BASEF[f-1]]);if(ALTF[f])FVL.push([f,ALTF[f]]);}
- for(var fv=0;fv<FVL.length;fv++){f=FVL[fv][0];var FV=FVL[fv][1],ks=[],src=f===1?['gob','sling','slime','mini','guard','gbrute','boar','rat']:FV.t;
+ for(var fv=0;fv<FVL.length;fv++){f=FVL[fv][0];var FV=FVL[fv][1],ks=[],src=f===1?['gob','sling','slime','mini','guard','gbrute','boar','rat','shieldg']:FV.t;
   for(i=0;i<src.length;i++)if(ks.indexOf(src[i])<0)ks.push(src[i]);if(f===2){ks.push('mar');ks.push('marb');}
   h+='<p class="pts" style="margin-top:12px">Этаж '+f+' · '+FV.n+(C.fl[f]?' · '+FV.note:' · ещё не посещён')+'</p>';
   for(i=0;i<ks.length;i++){var k=ks[i],n=C.kc[k]||0,t=TYPES[k];
@@ -1222,15 +1250,17 @@ function essDialog(ob){
  if(ab)ab.addEventListener('click',function(){if(C.ess.indexOf(ob.kind)>=0||C.ess.length>=slots())return;C.ess.push(ob.kind);var ix=orbs.indexOf(ob);if(ix>=0)orbs.splice(ix,1);save();applyD(false);say('Эссенция поглощена: '+e.name);state='play';ui.className='hide';});
  document.getElementById('lv').addEventListener('click',function(){ob.skip=true;state='play';ui.className='hide';});
 }
+function hallHtml(){var hall=[];try{hall=JSON.parse(localStorage.getItem('lv_hall')||'[]');}catch(e){}if(!hall.length)return '';
+ var h='<p class="pts" style="margin-top:14px">Зал павших</p><div class="lst">';for(var i=0;i<Math.min(8,hall.length);i++){var x=hall[i];h+='<div class="row"><span>'+(RACES[x.r]?RACES[x.r].name:'?')+' · ур. '+x.l+' · этаж '+x.f+' · '+x.w+(x.e&&x.e.length?'<br><small>'+x.e.map(function(k){return ESS[k]?ESS[k].name:k;}).join(', ')+'</small>':'')+'</span></div>';}return h+'</div>';}
 function raceSelect(){
- state='menu';var h='<h2>Выберите расу</h2><p>Расы различаются только стартовыми характеристиками. Сумма у всех одинаковая — 132.</p><div class="races">',k;
+ state='menu';var h='<h2>Выберите расу</h2><p class="pts">Смерть в Лабиринте окончательна: погибший герой теряет всё, и игра начинается заново.</p><p>Расы различаются только стартовыми характеристиками. Сумма у всех одинаковая — 132.</p><div class="races">',k;
  for(k in RACES){var r=RACES[k],t=[];for(var i=0;i<6;i++)t.push(SN[i]+' '+r.s[i]);h+='<button class="race" data-r="'+k+'"><b>'+r.name+'</b>'+t.slice(0,3).join(' · ')+'<br>'+t.slice(3).join(' · ')+'<br>'+r.d+'</button>';}
- h+='</div>';box.innerHTML=h;ui.className='';ui.scrollTop=0;
+ h+='</div>'+hallHtml();box.innerHTML=h;ui.className='';ui.scrollTop=0;
  var bs=box.querySelectorAll('.race');for(var j=0;j<bs.length;j++)bs[j].addEventListener('click',function(){newChar(this.getAttribute('data-r'));hero=null;city();});
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.15 · десять этажей Лабиринта</p><p>Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.16 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
@@ -1261,7 +1291,7 @@ function update(dt){
  var boost=1+0.2*dark,htl=Math.floor(hero.y/T)*MW+Math.floor(hero.x/T);flowTm-=dt;if(htl!==flowTile||flowTm<=0){buildFlow();flowTm=0.6;}
  for(i=mons.length-1;i>=0;i--){var m=mons[i],dx=hero.x-m.x,dy=hero.y-m.y,d=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/d,uy=dy/d;
   m.cd-=dt;if(m.flash>0)m.flash-=dt;if(m.sund>0)m.sund-=dt;
-  for(var z=m.dots.length-1;z>=0;z--){var dt2=m.dots[z];m.hp-=dt2.dps*dt;if(dt2.bl&&M().bleedHeal)heal(dt2.dps*dt);dt2.t-=dt;dt2.acc=(dt2.acc||0)+dt2.dps*dt;dt2.tk=(dt2.tk||0)+dt;
+  for(var z=m.dots.length-1;z>=0;z--){var dt2=m.dots[z];m.hp-=dt2.dps*dt;if(dt2.bl&&M().bleedHeal)heal(dt2.dps*dt*0.5);dt2.t-=dt;dt2.acc=(dt2.acc||0)+dt2.dps*dt;dt2.tk=(dt2.tk||0)+dt;
    if(dt2.tk>=0.5||dt2.t<=0){if(dt2.acc>=0.5)float(m.x+rnd(-8,8),m.y-m.r-6,''+Math.round(dt2.acc),dt2.bl?'#ff4d5e':dt2.po?'#8fd14f':'#ff9a3d');dt2.tk=0;dt2.acc=0;}
    if(dt2.bl&&Math.random()<dt*16)parts.push({x:m.x+rnd(-m.r*0.6,m.r*0.6),y:m.y+rnd(-m.r*0.3,m.r*0.3),vx:rnd(-6,6),vy:rnd(30,60),col:'#c8102e',t:rnd(0.35,0.6)});
    if(dt2.t<=0)m.dots.splice(z,1);}
@@ -1271,7 +1301,9 @@ function update(dt){
   m.lt=(m.lt||0)-dt;if(m.lt<=0){m.lt=0.2+Math.random()*0.1;m.see=d<520&&los(m,hero);}
   if(m.flT>0)m.flT-=dt;var px0=m.x,py0=m.y;
   if((!m.see||m.flT>0)&&m.state==='chase'){var fd=flowDir(m);if(fd){ux=fd.x;uy=fd.y;}if(!m.see)d=Math.max(d,420);}
-  var TT0=TYPES[m.type];if(TT0.charge)m.chT=(m.chT===undefined?1.5:m.chT)-dt;
+  var TT0=TYPES[m.type];if(TT0.enrage&&!m.enr&&m.hp<m.mhp*0.4){m.enr=1;m.spd*=1.5;m.dmg*=1.3;float(m.x,m.y-m.r-22,'ярость!','#ff6b6b');burst(m.x,m.y,'#e5484d',14);}
+  if(TT0.regen&&m.hp<m.mhp&&elapsed-(m.lastHit||-9)>2.5&&!m.dots.some(function(q){return q.fi;})){m.hp=Math.min(m.mhp,m.hp+m.mhp*0.03*dt);if(Math.random()<dt*4)parts.push({x:m.x+rnd(-m.r,m.r),y:m.y,vx:0,vy:-30,col:'#6fdc8c',t:0.5});}
+  if(TT0.charge)m.chT=(m.chT===undefined?1.5:m.chT)-dt;
   if((m.state==='wind'||m.state==='rushw')&&(m.ai==='guard'||m.ai==='boss'||m.elite)&&m.see){m.mt=(m.mt===undefined?0.35:m.mt)-dt;if(m.mt<=0&&dist(m,hero)<m.r+hero.r+16){m.mt=0.75;var od0=m.dmg;m.dmg*=0.5;mhit(m,m.x,m.y);m.dmg=od0;m.swg=0.18;}}
   if(m.swg>0)m.swg-=dt;
   if(m.state==='rushw'){m.t-=dt;if(m.t<=0){m.state='rush';m.t=0.42;m.hit=false;}}
@@ -1322,7 +1354,7 @@ function update(dt){
   if(gone){burst(sh.x,sh.y,sh.magic?'#7aa8ff':'#ffb454',4);shots.splice(i,1);}}
  for(i=eshots.length-1;i>=0;i--){var es=eshots[i];es.life-=dt;es.x+=es.vx*dt;es.y+=es.vy*dt;
   if(es.life<=0||solid(es.x,es.y))eshots.splice(i,1);else if(dist(es,hero)<hero.r+4){eshots.splice(i,1);var dl=hitHero(es.dmg,es.x,es.y,true,es.hum);if(dl>0){effHero(es.eff);if(es.pull&&es.pull.hp>0){var pdx=es.pull.x-hero.x,pdy=es.pull.y-hero.y,pl=Math.sqrt(pdx*pdx+pdy*pdy)||1,pk=Math.min(90,pl-40);if(pk>0){move(hero,pdx/pl*pk,pdy/pl*pk);float(hero.x,hero.y-30,'гарпун!','#7ad3ff');}}}}}
- for(i=ehz.length-1;i>=0;i--){var hz=ehz[i];hz.t-=dt;if(hz.arm>0)hz.arm-=dt;else if(dist(hz,hero)<hz.r+hero.r*0.4&&hero.dT<=0){hz.tk-=dt;if(hz.tk<=0){hz.tk=0.5;var hdl=hitHero(hz.dmg,hz.x,hz.y,true);if(hdl>0)effHero(hz.eff);if(state!=='play')return;}}if(hz.t<=0)ehz.splice(i,1);}
+ for(i=ehz.length-1;i>=0;i--){var hz=ehz[i];hz.t-=dt;if(hz.arm>0){hz.arm-=dt;if(hz.arm<=0&&hz.boom){burst(hz.x,hz.y,hz.eff==='fire'?'#ff7a3d':hz.eff==='ice'?'#8fd3ff':'#8fd14f',22);rings.push({x:hz.x,y:hz.y,r:hz.r,t:0.3});shake=Math.max(shake,4);}}else if(dist(hz,hero)<hz.r+hero.r*0.4&&hero.dT<=0){hz.tk-=dt;if(hz.tk<=0){hz.tk=0.5;var hdl=hitHero(hz.dmg,hz.x,hz.y,true);if(hdl>0)effHero(hz.eff);if(state!=='play')return;}}if(hz.t<=0)ehz.splice(i,1);}
  for(i=drops.length-1;i>=0;i--){var dr=drops[i];if(dist(dr,hero)<20){if(C.lf&&!dr.it.u&&(C.lf.q[dr.it.q]||C.lf.g[dr.it.g])){if(!dr.flt){dr.flt=1;float(dr.x,dr.y-20,'фильтр','#7a8299');}}else if(C.bag.length>=20){if(!dr.full){dr.full=1;float(hero.x,hero.y-36,'сумка полна','#ffc53d');}}else{dr.it.n=1;C.bag.push(dr.it);drops.splice(i,1);sfx('item');say('Найдено: '+itName(dr.it));save();}}else dr.full=0;}
  for(i=rings.length-1;i>=0;i--){rings[i].t-=dt;if(rings[i].t<=0)rings.splice(i,1);}
  for(i=0;i<chests.length;i++){var ch=chests[i];if(!ch.open&&dist(ch,hero)<24){ch.open=true;if(ch.rich){var ek2=Object.keys(ESS),tn;giveStone(ch.x,ch.y);dropItem(ch.x,ch.y,rollItem());dropItem(ch.x,ch.y,rollItem());addOrb({x:ch.x+34,y:ch.y,kind:ek2[ri(ek2.length)],t:90,T:90,skip:false});for(tn=0;tn<15;tn++){var ta=rnd(0,6.283),tvv2=rnd(30,120);items.push({x:ch.x,y:ch.y,vx:Math.cos(ta)*tvv2,vy:Math.sin(ta)*tvv2,t:0});}sfx('ess');say('Сокровище тайной комнаты');burst(ch.x,ch.y,'#ffc53d',24);}else if(Math.random()<0.5)giveStone(ch.x,ch.y);else{dropItem(ch.x,ch.y,rollItem());burst(ch.x,ch.y,'#ffc53d',14);}}}
@@ -1362,7 +1394,10 @@ var MV={gob:{k:'h',skin:'#6faa4d',body:'#7a5a3a',ears:1,weapon:'club',eyes:1},sl
  naga:{k:'h',skin:'#5fc8b8',body:'#2a6a6a',head:'hair',hair:'#1a3a4a',weapon:'spear'},deep:{k:'h',skin:'#4a8a9a',body:'#2a4a5a',ears:1,weapon:'spear',eyes:1},siren:{k:'h',skin:'#a8e0f0',body:'#3a7aa0',head:'hair',hair:'#8fd3ff',weapon:'wand',orb:'#7ad3ff'},
  crab:{k:'cr',col:'#c0503a'},assn:{k:'h',skin:'#9a8ab0',body:'#1a1a24',head:'hood',weapon:'dagger'},witch:{k:'h',skin:'#b8d0a0',body:'#2f4a26',head:'hood',weapon:'staff',orb:'#8fd14f'},
  treant:{k:'tr',col:'#5a4430',lc:'#3f6a2a'},hound:{k:'w',col:'#8a2a1a'},imp:{k:'f',col:'#e0502a'},demon:{k:'h',skin:'#c0402a',body:'#3a1010',head:'horns',weapon:'gaxe',eyes:1},
- shade:{k:'b',col:'#3a2a5a',ghost:1},rat:{k:'w',col:'#6a625a'},sprite:{k:'wi',col:'#b8f09a',rgb:'150,230,110'},dwarf:{k:'h',skin:'#d0a080',body:'#5a4030',head:'helm',weapon:'axe',shield:1},
+ shade:{k:'b',col:'#3a2a5a',ghost:1},shieldg:{k:'h',skin:'#6faa4d',body:'#5a4a3a',ears:1,weapon:'club',shield:1,eyes:1},bfrog:{k:'b',col:'#8ac04a'},troll:{k:'h',skin:'#7a8a6a',body:'#4a3a2a',ears:1,weapon:'club',eyes:1},
+ frostb:{k:'wi',col:'#bfe8ff',rgb:'150,210,255'},berserk:{k:'h',skin:'#d0a090',body:'#6a1018',head:'hood',weapon:'gaxe'},bonew:{k:'h',skin:'#e8e2c8',body:'#4a4a4a',head:'skull',weapon:'sword',shield:1},puffer:{k:'b',col:'#e0c050'},
+ alpha:{k:'w',col:'#2a2a33'},magma:{k:'b',col:'#ff6a2a'},vtroll:{k:'g',col:'#5a3a9a',dk:'#3a2070',eye:'255,90,200'},cbomb:{k:'b',col:'#d8f2ff',ghost:1},mtroll:{k:'h',skin:'#4a6a3a',body:'#2a3a1a',ears:1,weapon:'club',eyes:1},
+ starsh:{k:'h',skin:'#c8c0ff',body:'#2a2460',head:'helm',weapon:'sword',shield:1},rat:{k:'w',col:'#6a625a'},sprite:{k:'wi',col:'#b8f09a',rgb:'150,230,110'},dwarf:{k:'h',skin:'#d0a080',body:'#5a4030',head:'helm',weapon:'axe',shield:1},
  harpy:{k:'f',col:'#b08a6a'},hemo:{k:'g',col:'#8a1a26',dk:'#5a0a14',eye:'255,90,90'},lich:{k:'h',skin:'#c8d8f0',body:'#1a2a4a',head:'skull',weapon:'staff',orb:'#8fd3ff',cape:'#0f1a30'},eel:{k:'wm',col:'#2aa0a8'},
  cshard:{k:'g',col:'#a8e8ff',dk:'#6ab0d0',eye:'255,255,255'},cspider:{k:'sp',col:'#5ab8e0'},cgolem:{k:'g',col:'#d8f2ff',dk:'#8ac0e0',eye:'120,200,255'},prism:{k:'wi',col:'#ffffff',rgb:'200,240,255'},glimmer:{k:'h',skin:'#d8f0ff',body:'#4a7a9a',head:'helm',weapon:'gsword'},
  plague:{k:'h',skin:'#8aa070',body:'#3a3a20',eyes:1,weapon:'club'},bloat:{k:'b',col:'#9aa860'},swarm:{k:'bt',col:'#5a7a1a'},hag:{k:'h',skin:'#9ab080',body:'#2a3a1a',head:'hood',weapon:'staff',orb:'#8fd14f'},mire:{k:'tr',col:'#2a3a1e',lc:'#4a6a2a'},
@@ -1529,6 +1564,7 @@ function drawMon(m,i){
  if(m.state==='wind'||m.state==='rushw'){ctx.fillStyle='#ff6b6b';ctx.font='bold 13px system-ui,sans-serif';ctx.fillText('!',m.x,m.y-m.r-(m.hp<m.mhp?14:6));}
  if(m.swg>0){ctx.strokeStyle='rgba(255,220,200,'+(m.swg*4)+')';ctx.lineWidth=3;ctx.beginPath();ctx.arc(m.x,m.y,m.r+14,m.ang-0.9,m.ang+0.9);ctx.stroke();}
  if(m.hp<m.mhp||m.elite){var bw=m.elite?56:26;bar(m.x-bw/2,m.y-m.r-(m.elite?16:10),bw,m.elite?4:3,m.hp/m.mhp,m.elite?'#ffc53d':'#e5484d');}
+ if(m.enr)glow(m.x,m.y,m.r*1.8,'229,72,77',0.3+0.1*Math.sin(elapsed*10));
  if(m.afx&&!m.elite){glow(m.x,m.y,m.r*1.5,AFX[m.afx].g,0.22);ctx.fillStyle=AFX[m.afx].c;ctx.font='10px system-ui,sans-serif';ctx.fillText(m.label,m.x,m.y-m.r-(m.hp<m.mhp?16:8));}
  if(m.elite||m.boss||m.rb||m.human){ctx.fillStyle=m.human?'#ff9a9a':'#ffc53d';ctx.font='11px system-ui,sans-serif';ctx.fillText(m.label,m.x,m.y-m.r-22);}
  if(m.slow>0){ctx.strokeStyle='#8fd3ff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(m.x,m.y,m.r+4,0,6.283);ctx.stroke();}
@@ -1549,7 +1585,7 @@ function drawHero(){
 }
 function draw(){
  ctx.setTransform(dpr*S,0,0,dpr*S,0,0);ctx.fillStyle='#050609';ctx.fillRect(0,0,VW,VH);
- if(!hero)return;
+ if(!hero||!C)return;
  var ox=VW/2-hero.x+(shake?rnd(-shake,shake):0),oy=VH/2-hero.y+(shake?rnd(-shake,shake):0),i,j,P=FLOORS[floor-1].pal||FP[floor-1];
  ctx.save();ctx.translate(ox,oy);
  var i0=Math.max(0,Math.floor((hero.x-VW/2)/T)-1),i1=Math.min(MW-1,Math.floor((hero.x+VW/2)/T)+1),j0=Math.max(0,Math.floor((hero.y-VH/2)/T)-1),j1=Math.min(MH-1,Math.floor((hero.y+VH/2)/T)+1);
@@ -1579,13 +1615,13 @@ function draw(){
  if(rpd&&seen[Math.floor(rpd.y/T)*MW+Math.floor(rpd.x/T)]){glow(rpd.x,rpd.y,36,'224,92,255',0.5);ctx.strokeStyle='#e05cff';ctx.lineWidth=2.5;poly(rpd.x,rpd.y,20+Math.sin(pt*1.7)*2,7,pt*0.5);ctx.stroke();poly(rpd.x,rpd.y,11,5,-pt);ctx.stroke();
   if(chanR>0){ctx.strokeStyle='#f4f7ff';ctx.lineWidth=4;ctx.beginPath();ctx.arc(rpd.x,rpd.y,28,-1.57,-1.57+6.283*chanR/1.5);ctx.stroke();}
   ctx.fillStyle='#f0b3ff';ctx.fillText(rift.exit?'Выход из разлома':'Разлом',rpd.x,rpd.y-32);}
- for(i=0;i<ehz.length;i++){var hz2=ehz[i],hc2=hz2.eff==='fire'?'255,120,40':'143,209,79',ha=hz2.arm>0?0.12:0.28*Math.min(1,hz2.t);ctx.fillStyle='rgba('+hc2+','+ha+')';ctx.beginPath();ctx.arc(hz2.x,hz2.y,hz2.r,0,6.283);ctx.fill();
+ for(i=0;i<ehz.length;i++){var hz2=ehz[i],hc2=hz2.eff==='fire'?'255,120,40':hz2.eff==='ice'?'143,211,255':'143,209,79',ha=hz2.arm>0?0.12:0.28*Math.min(1,hz2.t);ctx.fillStyle='rgba('+hc2+','+ha+')';ctx.beginPath();ctx.arc(hz2.x,hz2.y,hz2.r,0,6.283);ctx.fill();
   if(hz2.arm>0){ctx.setLineDash([5,4]);ctx.strokeStyle='rgba('+hc2+',0.8)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(hz2.x,hz2.y,hz2.r,0,6.283);ctx.stroke();ctx.setLineDash([]);}else if(Math.random()<0.3)parts.push({x:hz2.x+rnd(-hz2.r*0.7,hz2.r*0.7),y:hz2.y+rnd(-hz2.r*0.5,hz2.r*0.5),vx:0,vy:rnd(-30,-10),col:'rgb('+hc2+')',t:0.5});}
  for(i=0;i<hero.cls.length;i++){var hc3=hero.cls[i];ctx.fillStyle='rgba(143,209,79,'+(0.22*Math.min(1,hc3.t))+')';ctx.beginPath();ctx.arc(hc3.x,hc3.y,hc3.r,0,6.283);ctx.fill();ctx.strokeStyle='rgba(143,209,79,0.5)';ctx.lineWidth=1;ctx.stroke();}
  for(i=0;i<hero.mets.length;i++){var me2=hero.mets[i],mf=1-me2.t/me2.T;ctx.fillStyle='rgba(255,140,40,0.14)';ctx.beginPath();ctx.arc(me2.x,me2.y,me2.r,0,6.283);ctx.fill();ctx.strokeStyle='#ff9a3d';ctx.lineWidth=1.5;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(me2.x,me2.y,me2.r,0,6.283);ctx.stroke();ctx.setLineDash([]);
   var fy2=me2.y-(1-mf)*260;glow(me2.x,fy2,22,'255,150,50',0.8);ctx.fillStyle='#ffd27a';circ(me2.x,fy2,7);}
  for(i=0;i<mons.length;i++){var am2=mons[i];if(am2.rb&&am2.hp>0&&seesM(am2)){var fl3=0.5+0.5*Math.sin(elapsed*7);glow(am2.x,am2.y,am2.aR*1.15,'255,110,40',0.18+0.08*fl3);ctx.strokeStyle='rgba(255,120,40,'+(0.45+0.3*fl3)+')';ctx.lineWidth=2;ctx.setLineDash([10,6]);ctx.lineDashOffset=-elapsed*30;ctx.beginPath();ctx.arc(am2.x,am2.y,am2.aR,0,6.283);ctx.stroke();ctx.setLineDash([]);if(Math.random()<0.5){var pa=Math.random()*6.283,pr=Math.random()*am2.aR;parts.push({x:am2.x+Math.cos(pa)*pr,y:am2.y+Math.sin(pa)*pr,vx:0,vy:rnd(-40,-15),col:'#ff9a3d',t:0.5});}}}
- if(C.ess.indexOf('b11')>=0){var fl4=0.5+0.5*Math.sin(elapsed*6);glow(hero.x,hero.y,125,'255,110,40',0.12+0.06*fl4);ctx.strokeStyle='rgba(255,140,60,'+(0.3+0.2*fl4)+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(hero.x,hero.y,110,0,6.283);ctx.stroke();if(Math.random()<0.4){var hpa=Math.random()*6.283,hpr=Math.random()*110;parts.push({x:hero.x+Math.cos(hpa)*hpr,y:hero.y+Math.sin(hpa)*hpr,vx:0,vy:rnd(-35,-10),col:'#ff9a3d',t:0.45});}}
+ if(C&&C.ess.indexOf('b11')>=0){var fl4=0.5+0.5*Math.sin(elapsed*6);glow(hero.x,hero.y,125,'255,110,40',0.12+0.06*fl4);ctx.strokeStyle='rgba(255,140,60,'+(0.3+0.2*fl4)+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(hero.x,hero.y,110,0,6.283);ctx.stroke();if(Math.random()<0.4){var hpa=Math.random()*6.283,hpr=Math.random()*110;parts.push({x:hero.x+Math.cos(hpa)*hpr,y:hero.y+Math.sin(hpa)*hpr,vx:0,vy:rnd(-35,-10),col:'#ff9a3d',t:0.45});}}
  if(hero.buffT>0)glow(hero.x,hero.y,34,'229,72,77',0.25+0.1*Math.sin(elapsed*6));
  for(i=0;i<teles.length;i++){var tl=teles[i],f=1-tl.m.t/tl.m.T;ctx.fillStyle='rgba(255,77,77,0.16)';ctx.beginPath();ctx.arc(tl.x,tl.y,tl.r,0,6.283);ctx.fill();
   ctx.fillStyle='rgba(255,77,77,0.3)';ctx.beginPath();ctx.arc(tl.x,tl.y,tl.r*f,0,6.283);ctx.fill();
