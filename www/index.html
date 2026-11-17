@@ -544,7 +544,13 @@ var XP1={gob:60,sling:60,slime:60,mini:30,guard:80,elite:150},XPR={gob:8,sling:9
 var C=null;
 function save(){MC=null;try{localStorage.setItem('lv_char',JSON.stringify(C));}catch(e){}}
 function load(){try{var t=localStorage.getItem('lv_char');if(t){var o=JSON.parse(t);if(o&&RACES[o.race]&&o.st&&o.sec){o.ess=o.ess||[];o.stones=o.stones||[];o.sock=o.sock||{};o.pity=o.pity||{};o.tree=o.tree||[];if(o.gold===undefined){o.gold=50+(o.bank||0)*10;o.earned=(o.bank||0)*10;}o.vess=o.vess||[];o.vessels=o.vessels||0;o.rst=o.rst||0;o.kc=o.kc||{};o.debt=!!o.debt;if(!o.eq)o.eq=starter();o.bag=o.bag||[];o.stash=o.stash||[];o.shop=o.shop||[];o.rifts=o.rifts||{};if(!o.fl)o.fl=o.floor1?{1:1}:{};C=o;MC=null;}}}catch(e){}}
-function newChar(r){C={race:r,lvl:1,xp:0,st:RACES[r].s.slice(),sp:0,pp:0,tp:0,sec:{},kinds:{},floor1:false,gold:50,earned:0,debt:false,vess:[],vessels:0,rst:0,kc:{},eq:starter(),bag:[],stash:[],shop:[],rifts:{},fl:{},ess:[],stones:[],sock:{},pity:{},test:false,tree:[],rs:0};MC=null;SEC.forEach(function(q){C.sec[q[0]]=0;});save();}
+var WMF=['sword','axe','dagger','wand','gsword','gaxe','spear','bow','staff'];
+function wmL(f){return C&&C.wm&&C.wm[f]?C.wm[f].l:0;}
+function wmNeed(l){return 25*(l+1)*(l+1);}
+function wmGain(m){var f=hero&&hero.fam;if(!f||WMF.indexOf(f)<0)return;C.wm=C.wm||{};var w=C.wm[f]||(C.wm[f]={l:0,x:0});if(w.l>=10)return;
+ w.x+=(m.boss||m.rb?20:m.elite?5:1)*(1+0.25*(floor-1));
+ while(w.l<10&&w.x>=wmNeed(w.l)){w.x-=wmNeed(w.l);w.l++;say('Владение: '+B[f].n+' — уровень '+w.l);float(hero.x,hero.y-44,B[f].n+': владение '+w.l,'#ffc53d',true);sfx('lvl');applyD(false);}if(w.l>=10)w.x=0;}
+function newChar(r){C={race:r,lvl:1,xp:0,st:RACES[r].s.slice(),sp:0,pp:0,tp:0,sec:{},kinds:{},floor1:false,gold:50,earned:0,debt:false,vess:[],vessels:0,rst:0,kc:{},eq:starter(),bag:[],stash:[],shop:[],rifts:{},fl:{},ess:[],stones:[],sock:{},pity:{},test:false,tree:[],rs:0,wm:{}};MC=null;SEC.forEach(function(q){C.sec[q[0]]=0;});save();}
 function need(l){return l<15?200*l*l:Math.round(200*l*l*3*(1+0.5*(l-15)));}
 function derive(){var D=derive0(),t=M(),p=function(k){return 1+(t[k]||0)/100;};
  D.mp=Math.round(D.mp*p('mp'));D.hp=Math.round(D.hp*p('hp'))+(t.kBlood?Math.round(D.mp/2):0);
@@ -554,8 +560,8 @@ function derive0(){var l=C.lvl-1,s=[0,1,2,3,4,5].map(est),q=C.sec,m=function(i,k
  return {hp:Math.round((100+30*l+12*q.hp)*m(2,0.03)),mp:Math.round((50+12*l+8*q.mp)*m(5,0.03)),cp:Math.round((40+15*l+10*q.cp)*m(2,0.03)),
   acc:Math.round((50+4*l+3*q.acc)*m(1,0.02)),eva:Math.round((40+4*l+3*q.eva)*m(1,0.02)),crit:Math.max(1,5+q.crit+(s[1]-20)*0.5),mcrit:Math.max(1,5+q.crit+(s[4]-20)*0.5),regen:Math.round(0.1*(s[0]+s[3])*m(2,0.03)*10)/10,critp:150+5*q.critp,
   pdef:Math.round((armorDef()+6*q.pdef)),mdef:Math.round((20+3*l+6*q.mdef)*m(5,0.02)),strM:m(0,0.03),dexM:m(1,0.03),intM:m(3,0.03),aspd:Math.round(m(1,0.01)*(1+0.015*q.aspd)*100),cspd:Math.round(m(4,0.015)*(1+0.015*q.cspd)*100),mreg:Math.round(1.5*m(5,0.03)*10)/10,strC:m(0,0.02),dexC:m(1,0.02),spdM:1};}
-function applyD(full){var D=derive();if(!hero)return D;var dh=D.hp-hero.mhp;hero.mhp=D.hp;hero.mmp=D.mp;hero.mcp=D.cp;hero.acc=D.acc;hero.eva=D.eva;hero.def=D.pdef;hero.strM=D.strM;hero.crit=D.crit;hero.critp=D.critp;hero.regen=D.regen;hero.mreg=D.mreg;hero.strC=D.strC;hero.dexC=D.dexC;hero.spdM=D.spdM;hero.aCd=0.42*100/D.aspd;hero.fMax=3+(M().flaskMax||0);var wi=C.eq.w,wb=works(wi)?B[wi.b]:null,wm=wb?gm(wi)*(1+(M().wdmg||0)/100):1;hero.wp=wb?wb.atk:{t:'arc',r:36,a:1};hero.wd=wb?[wb.dmg[0]*wm,wb.dmg[1]*wm]:[6,9];hero.off2=!!(wb&&works(C.eq.o)&&B[C.eq.o.b].slot==='w');hero.intM=D.intM*(1+(M().mdmg||0)/100);hero.cspd=D.cspd;hero.mcrit=D.mcrit;var wds=wb?wb.ds:0;hero.wM=wds===3?hero.intM:wds===1?D.dexM:D.strM;hero.pM=wds===1?D.dexM:D.strM;var wf=wb?wb.fam:'';hero.skA=wf==='gsword'||wf==='spear'?1.4:wf==='gaxe'?1.25:1;hero.splash=wf==='gsword'||wf==='spear';hero.cleave=!!(wb&&wb.two);hero.fam=wf;
- if(hero.off2){var oi=C.eq.o,ob2=B[oi.b],om=gm(oi);hero.wd2=[ob2.dmg[0]*om,ob2.dmg[1]*om];hero.wM2=ob2.ds===1?D.dexM:D.strM;hero.wp2=ob2.atk;hero.offMul=Math.min(1,0.75*(1+(M().dual||0)/100));}else{hero.wd2=hero.wd;hero.wM2=hero.wM;hero.wp2=hero.wp;hero.offMul=0.75;}
+function applyD(full){var D=derive();if(!hero)return D;var dh=D.hp-hero.mhp;hero.mhp=D.hp;hero.mmp=D.mp;hero.mcp=D.cp;hero.acc=D.acc;hero.eva=D.eva;hero.def=D.pdef;hero.strM=D.strM;hero.crit=D.crit;hero.critp=D.critp;hero.regen=D.regen;hero.mreg=D.mreg;hero.strC=D.strC;hero.dexC=D.dexC;hero.spdM=D.spdM;hero.aCd=0.42*100/D.aspd;hero.fMax=3+(M().flaskMax||0);var wi=C.eq.w,wb=works(wi)?B[wi.b]:null,wm=wb?gm(wi)*(1+(M().wdmg||0)/100)*(1+0.025*wmL(wb.fam)):1;hero.wp=wb?wb.atk:{t:'arc',r:36,a:1};hero.wd=wb?[wb.dmg[0]*wm,wb.dmg[1]*wm]:[6,9];hero.off2=!!(wb&&works(C.eq.o)&&B[C.eq.o.b].slot==='w');hero.intM=D.intM*(1+(M().mdmg||0)/100);hero.cspd=D.cspd;hero.mcrit=D.mcrit;var wds=wb?wb.ds:0;hero.wM=wds===3?hero.intM:wds===1?D.dexM:D.strM;hero.pM=wds===1?D.dexM:D.strM;var wf=wb?wb.fam:'';hero.skA=wf==='gsword'||wf==='spear'?1.4:wf==='gaxe'?1.25:1;hero.splash=wf==='gsword'||wf==='spear';hero.cleave=!!(wb&&wb.two);hero.fam=wf;
+ if(hero.off2){var oi=C.eq.o,ob2=B[oi.b],om=gm(oi)*(1+0.025*wmL(ob2.fam));hero.wd2=[ob2.dmg[0]*om,ob2.dmg[1]*om];hero.wM2=ob2.ds===1?D.dexM:D.strM;hero.wp2=ob2.atk;hero.offMul=Math.min(1,0.75*(1+(M().dual||0)/100));}else{hero.wd2=hero.wd;hero.wM2=hero.wM;hero.wp2=hero.wp;hero.offMul=0.75;}
  if(full){hero.hp=D.hp;hero.mp=D.mp;}else{if(dh>0)hero.hp+=dh;hero.hp=Math.min(hero.hp,hero.mhp);hero.mp=Math.min(hero.mp,D.mp);}hero.cp=D.cp;return D;}
 function gainXp(n,why){if(C.lvl>=25)return;n=Math.round(n*(1+(M().xpP||0)/100));C.xp+=n;if(why)float(hero.x,hero.y-40,'+'+n+' опыта: '+why,'#c79bff',true);
  while(C.lvl<15&&C.xp>=need(C.lvl)){C.xp-=need(C.lvl);C.lvl++;sfx('lvl');hero.lvlG=3;C.sp+=1;C.pp+=5;C.tp+=2;applyD(false);hero.hp=hero.mhp;say('Уровень '+C.lvl+'! Нажмите на полосы героя — там очки');burst(hero.x,hero.y,'#c79bff',24);}
@@ -691,7 +697,7 @@ function giveStone(x,y){
 }
 function kill(m){
  var T0=TYPES[m.type],kd=m.boss?'boss'+floor:(m.elite?(floor===1?'elite':'elite'+floor):m.type),i;
- kills++;sfx('kill');burst(m.x,m.y,m.col,m.elite||m.boss?26:10);C.kc[kd]=(C.kc[kd]||0)+1;
+ kills++;sfx('kill');wmGain(m);burst(m.x,m.y,m.col,m.elite||m.boss?26:10);C.kc[kd]=(C.kc[kd]||0)+1;
  var n=m.st[0]+ri(m.st[1]-m.st[0]+1);
  for(i=0;i<n;i++){var a=rnd(0,6.283),sv=rnd(30,110);items.push({x:m.x,y:m.y,vx:Math.cos(a)*sv,vy:Math.sin(a)*sv,t:0});}
  if(T0.explode){ehz.push({x:m.x,y:m.y,r:72,arm:0.7,t:0.75,dmg:m.dmg*1.5,eff:T0.explode,tk:0,boom:1});}
@@ -961,6 +967,7 @@ function modTxt(k,v){
  if(k==='cdr')return 'Перезарядка навыков −'+v+'%';if(k==='critMp')return 'МП за крит +'+v;if(k==='critX')return 'Шанс крита ×'+(1+v/100);
  if(k==='accF')return 'Точность '+(v>0?'+':'−')+Math.abs(v);if(k==='evaF')return 'Уклонение '+(v>0?'+':'−')+Math.abs(v);
  return (LBL[k]||k)+' '+(v>0?'+':'−')+Math.abs(v)+'%';}
+function wandM(it){return 10+2*(it.g||0);}
 function gm(it){return GM[it.g]*(1+0.08*(it.up||0));}
 function works(it){return !!it;}
 function itName(it){return (it.u?UNI[it.u].n:B[it.b].n)+(it.up?' +'+it.up:'')+' ['+GN[it.g]+']'+(it.st?' · казённое':' · '+QN[it.q]);}
@@ -968,6 +975,7 @@ function offMods(it){var b=B[it.b];return b.slot==='w'?(b.fam==='sword'?{evaF:-6
 function itDesc(it,asOff){var b=B[it.b],t=[],k,m=asOff?offMods(it):b.m;
  if(b.dmg&&!asOff)t.push('<strong>Урон '+Math.round(b.dmg[0]*gm(it))+'–'+Math.round(b.dmg[1]*gm(it))+'</strong> · растёт от '+SN[b.ds]+(b.two?' · двуручное, '+(b.atk.t==='shot'?'одна цель':'бьёт всех в замахе'):' · одна цель'));
  if(b.dmg&&asOff)t.push('Второй удар на 75% урона');
+ if(b.fam==='wand')t.push('<span style="color:#9cc0ff">Восстановление МП +'+wandM(it)+'%</span>');
  if(b.def)t.push('<strong>Защита '+Math.round(b.def*gm(it))+'</strong>');
  for(k in m)t.push(modTxt(k,b.jw?Math.round(m[k]*PM[it.g]):m[k]));
  if(it.qv)t.push(modTxt(it.qv[0],it.qv[1]));
@@ -978,7 +986,8 @@ function itemMods(acc){var s,k;for(s in C.eq){var it=C.eq[s];if(!works(it))conti
   for(k in m)acc[k]=(acc[k]||0)+(b.jw?Math.round(m[k]*PM[it.g]):m[k]);
   if(it.qv)acc[it.qv[0]]=(acc[it.qv[0]]||0)+it.qv[1];
   for(var i=0;i<it.pk.length;i++)acc[it.pk[i][0]]=(acc[it.pk[i][0]]||0)+it.pk[i][1];
-  if(it.u){var um=UNI[it.u].m;for(k in um)acc[k]=(acc[k]||0)+um[k];}}}
+  if(it.u){var um=UNI[it.u].m;for(k in um)acc[k]=(acc[k]||0)+um[k];}
+  if(b.fam==='wand')acc.mreg=(acc.mreg||0)+wandM(it);}}
 function armorDef(){var d=0,ss=['a','h','gl','b','o'];for(var i=0;i<5;i++){var it=C.eq[ss[i]];if(works(it)&&B[it.b].def)d+=B[it.b].def*gm(it);}return Math.round(d);}
 function genItem(g,q,id){var b=B[id],it={b:id,g:g,q:q,pk:[],md:DUR[g],d:DUR[g]},pool=[],k;
  if(b.fam==='quiver'){var qs=[['evaF',4],['accF',4],['crit',5],['critp',5],['aspd',5]];it.qv=qs[ri(5)];}
@@ -1013,10 +1022,10 @@ function eqCore(i,off){var it=C.bag[i],b=B[it.b],sl=b.slot,old;
  MC=null;return '';}
 function equip(i,off){var m=eqCore(i,off);if(!m)save();return m;}
 function unCore(k){var it2=C.eq[k];C.eq[k]=null;C.bag.push(it2);if(k==='w'&&C.eq.o&&!compat(null,C.eq.o)){C.bag.push(C.eq.o);C.eq.o=null;}MC=null;}
-function statNow(){MC=null;var D=derive(),t=M(),wi=C.eq.w,wb=works(wi)?B[wi.b]:null,wm=wb?gm(wi)*(1+(t.wdmg||0)/100):1,lo=wb?wb.dmg[0]*wm:6,hi=wb?wb.dmg[1]*wm:9,wds=wb?wb.ds:0,k=(wds===3?D.intM*(1+(t.mdmg||0)/100):wds===1?D.dexM:D.strM)*(1+(t.dmg||0)/100);
- return {dmg:[Math.round(lo*k),Math.round(hi*k)],aspd:D.aspd,pdef:D.pdef,hp:D.hp,mp:D.mp,acc:D.acc,eva:D.eva,crit:D.crit,critp:D.critp,blk:t.block||0,regen:D.regen,move:Math.round(D.spdM*100)};}
+function statNow(){MC=null;var D=derive(),t=M(),wi=C.eq.w,wb=works(wi)?B[wi.b]:null,wm=wb?gm(wi)*(1+(t.wdmg||0)/100)*(1+0.025*wmL(wb.fam)):1,lo=wb?wb.dmg[0]*wm:6,hi=wb?wb.dmg[1]*wm:9,wds=wb?wb.ds:0,k=(wds===3?D.intM*(1+(t.mdmg||0)/100):wds===1?D.dexM:D.strM)*(1+(t.dmg||0)/100);
+ return {dmg:[Math.round(lo*k),Math.round(hi*k)],aspd:D.aspd,pdef:D.pdef,hp:D.hp,mp:D.mp,acc:D.acc,eva:D.eva,crit:D.crit,critp:D.critp,blk:t.block||0,regen:D.regen,mreg:D.mreg,move:Math.round(D.spdM*100)};}
 function statSim(fn){var e0=C.eq,b0=C.bag,k,e1={};for(k in e0)e1[k]=e0[k];C.eq=e1;C.bag=b0.slice();var bad=fn(),r=bad?null:statNow();C.eq=e0;C.bag=b0;MC=null;return r;}
-var STL=[['dmg','Урон за удар',''],['aspd','Скорость атаки','%'],['pdef','Физ. защита',''],['hp','ХП',''],['mp','МП',''],['acc','Точность',''],['eva','Уклонение',''],['crit','Шанс крита','%'],['critp','Сила крита','%'],['blk','Шанс блока','%'],['regen','Восстановление ХП',''],['move','Скорость бега','%']];
+var STL=[['dmg','Урон за удар',''],['aspd','Скорость атаки','%'],['pdef','Физ. защита',''],['hp','ХП',''],['mp','МП',''],['acc','Точность',''],['eva','Уклонение',''],['crit','Шанс крита','%'],['critp','Сила крита','%'],['blk','Шанс блока','%'],['regen','Восстановление ХП',''],['mreg','Восстановление МП',''],['move','Скорость бега','%']];
 function statHtml(a,b){var h='',i;for(i=0;i<STL.length;i++){var k=STL[i][0],u=STL[i][2],va=k==='dmg'?a.dmg[0]+'–'+a.dmg[1]:a[k]+u,x='';
   if(b){var na=k==='dmg'?a.dmg[0]+a.dmg[1]:a[k],nb=k==='dmg'?b.dmg[0]+b.dmg[1]:b[k];if(nb!==na)x=' <span class="'+(nb>na?'up':'dn')+'">→ '+(k==='dmg'?b.dmg[0]+'–'+b.dmg[1]:b[k]+u)+'</span>';}
   h+='<div><span>'+STL[i][1]+'</span><b>'+va+x+'</b></div>';}return h;}
@@ -1289,7 +1298,8 @@ function sheet(mode){
  h+=C.lvl<15?'<p>Опыт: '+C.xp+' / '+need(C.lvl)+'</p>':'<p>Максимальный уровень</p>';
  h+='<p class="pts">Очки характеристик: '+C.sp+'</p>';
  for(i=0;i<6;i++)h+='<div class="row"><span>'+SN[i]+'</span><b>'+C.st[i]+'</b>'+(C.sp>0?'<button class="pl" data-s="'+i+'" aria-label="Повысить '+SN[i]+'">+</button>':'<em></em>')+'</div>';
- h+='<p>Шанс маг. крита: '+D.mcrit+'% (от ПРН). Каждая единица ЛВК даёт +0,5% к шансу крита, ПРН — к магическому.</p><p>Восстановление ХП: '+D.regen+' в секунду вне боя, в бою — пятая часть.</p><button id="tr" class="sec2" style="margin:8px 0">Пассивное древо · очков: '+C.tp+'</button><button id="gr" class="sec2" style="margin:8px 0 8px 10px">Снаряжение</button><p>Золото: '+C.gold+'</p></div>';
+ var wmh='<p class="pts">Владение оружием · до 10 уровня, +2,5% к урону оружия за уровень</p>';for(var wq=0;wq<WMF.length;wq++){var wf2=WMF[wq],wl=wmL(wf2),wx=C.wm&&C.wm[wf2]?C.wm[wf2].x:0;wmh+='<div class="row">'+icoBox(wf2,wl?'#ffc53d':'#5b6480')+'<span><strong>'+B[wf2].n+'</strong> · ур. '+wl+'/10 · урон +'+(wl*2.5)+'%<br><small style="color:#8f99b3">'+(wl>=10?'мастерство достигнуто':'до следующего: '+Math.floor(wx)+' / '+wmNeed(wl))+'</small></span></div>';}
+ h+=wmh+'<p>Шанс маг. крита: '+D.mcrit+'% (от ПРН). Каждая единица ЛВК даёт +0,5% к шансу крита, ПРН — к магическому.</p><p>Восстановление ХП: '+D.regen+' в секунду вне боя, в бою — пятая часть.</p><button id="tr" class="sec2" style="margin:8px 0">Пассивное древо · очков: '+C.tp+'</button><button id="gr" class="sec2" style="margin:8px 0 8px 10px">Снаряжение</button><p>Золото: '+C.gold+'</p></div>';
  h+='<div class="col"><p class="pts">Очки параметров: '+C.pp+' · не больше 20 в один</p>';
  for(i=0;i<SEC.length;i++){var k=SEC[i][0];h+='<div class="row"><span>'+SEC[i][1]+'</span><b>'+secVal(k,D)+'</b><i>'+C.sec[k]+'/20</i>'+(C.pp>0&&C.sec[k]<20?'<button class="pl" data-q="'+k+'" aria-label="Повысить '+SEC[i][1]+'">+</button>':'<em></em>')+'</div>';}
  h+='</div><div class="col wide"><p class="pts">Эссенции: '+C.ess.length+' из '+slots()+' слотов</p>';
@@ -1359,7 +1369,7 @@ function raceSelect(){
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.20 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.21 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
