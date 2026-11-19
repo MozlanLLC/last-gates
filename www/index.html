@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"./3d/lib/three.module.js"}}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#06070b">
@@ -86,7 +87,7 @@ textarea{width:100%;box-sizing:border-box;height:72px;margin-top:8px;background:
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="c3d" style="position:fixed;left:0;top:0;width:100%;height:100%;display:none"></canvas><canvas id="c"></canvas>
 <div id="ui"><div id="box"></div></div>
 <button id="fsb" aria-label="Полный экран" title="Полный экран" style="position:fixed;z-index:50;top:6px;left:max(266px, calc(50% - 160px));width:34px;height:34px;min-width:0;padding:0;margin:0;border-radius:10px;background:rgba(14,17,25,0.75);border:1.5px solid #3a4158;display:none;align-items:center;justify-content:center"></button>
 <div id="tree" class="hide"><div id="tsv"></div></div>
@@ -1425,12 +1426,14 @@ function fsUpd(){var b=document.getElementById('fsb');if(!b||!b.style)return;if(
  b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c9d1e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(on2?'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5':'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5')+'"></path></svg>';b.setAttribute('aria-label',on2?'Выйти из полного экрана':'Полный экран');b.title=on2?'Выйти из полного экрана':'Полный экран';}
 (function(){var b=document.getElementById('fsb');if(b&&b.addEventListener){b.addEventListener('click',function(e){if(e&&e.stopPropagation)e.stopPropagation();fsToggle();});b.addEventListener('pointerdown',function(e){if(e&&e.stopPropagation)e.stopPropagation();});}
  if(document.addEventListener){document.addEventListener('fullscreenchange',fsUpd);document.addEventListener('webkitfullscreenchange',fsUpd);}fsUpd();})();
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function saves(){setBg('city');
  var code='';try{code=btoa(unescape(encodeURIComponent(JSON.stringify(C))));}catch(e){}
- var h='<h2>Настройки и сохранение</h2><p>Игра сохраняется в памяти устройства сама. Смерть в Лабиринте окончательна, перенести или восстановить героя нельзя.</p><button id="tst" class="sec2">Тест: шанс эссенций и уникальных вещей ×10 — '+(C.test?'включён':'выключен')+'</button>'+(fsCan()?'<button id="fsm" class="sec2">'+(fsEl()?'Выйти из полного экрана':'Полный экран')+'</button>':'')+'<button id="snd" class="sec2">Звук: '+(C.mute?'выключен':'включён')+'</button><button id="re" class="sec2">Новый герой</button>';
+ var h='<h2>Настройки и сохранение</h2><p>Игра сохраняется в памяти устройства сама. Смерть в Лабиринте окончательна, перенести или восстановить героя нельзя.</p><button id="tst" class="sec2">Тест: шанс эссенций и уникальных вещей ×10 — '+(C.test?'включён':'выключен')+'</button>'+'<button id="g3d" class="sec2">3D-графика (проба): '+(lsGet('lv_3d')==='1'?'включена':'выключена')+'</button>'+(fsCan()?'<button id="fsm" class="sec2">'+(fsEl()?'Выйти из полного экрана':'Полный экран')+'</button>':'')+'<button id="snd" class="sec2">Звук: '+(C.mute?'выключен':'включён')+'</button><button id="re" class="sec2">Новый герой</button>';
  show(h+back());on('bk',city);
  on('tst',function(){C.test=!C.test;save();saves();});
  on('fsm',function(){fsToggle();setTimeout(saves,400);});
+ on('g3d',function(){try{localStorage.setItem('lv_3d',lsGet('lv_3d')==='1'?'0':'1');}catch(e){}save();location.reload();});
  on('snd',function(){C.mute=!C.mute;save();if(!C.mute){audioOn();sfx('pick');}saves();});
  var re=document.getElementById('re');on('re',function(){if(re.getAttribute('data-ok')){raceSelect();}else{re.setAttribute('data-ok','1');re.textContent='Стереть героя и начать заново?';}});
 }
@@ -1518,7 +1521,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.26 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.27 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
@@ -1956,7 +1959,8 @@ function drawHero(){
 }
 function draw(){
  ctx.setTransform(dpr*S,0,0,dpr*S,0,0);ctx.fillStyle='#050609';ctx.fillRect(0,0,VW,VH);
- if(!hero||!C)return;LIG.length=0;
+ if(!hero||!C){if(window.R3D)R3D.hide();return;}LIG.length=0;
+ if(window.R3D&&R3D.ready&&R3D.on&&!BGN){draw3o();return;}else if(window.R3D)R3D.hide();
  var ox=VW/2-hero.x+(shake?rnd(-shake,shake):0),oy=VH/2-hero.y+(shake?rnd(-shake,shake):0),i,j,P=FLOORS[floor-1].pal||FP[floor-1];
  ctx.save();ctx.translate(ox,oy);
  var i0=Math.max(0,Math.floor((hero.x-VW/2)/T)-1),i1=Math.min(MW-1,Math.floor((hero.x+VW/2)/T)+1),j0=Math.max(0,Math.floor((hero.y-VH/2)/T)-1),j1=Math.min(MH-1,Math.floor((hero.y+VH/2)/T)+1);
@@ -2071,6 +2075,15 @@ function draw(){
   ctx.fillStyle='#9b7bff';poly(ax,ay,9,3,an);ctx.fill();}
  hud();
 }
+function draw3o(){ctx.clearRect(0,0,VW,VH);R3D.frame();
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ for(var i=0;i<mons.length;i++){var m=mons[i];if(m.hp<=0||!seesM(m))continue;if(!(m.hp<m.mhp||m.elite||m.boss))continue;var p=R3D.proj(m.x,m.y,R3D.mh(m)+0.6);if(!p)continue;var bw=m.boss?54:m.elite?40:30;
+  bar2(p[0]-bw/2,p[1],bw,4,m.hp/m.mhp,m.hp/m.mhp,m.elite||m.boss?'#ffd970':'#f0606a',m.elite||m.boss?'#c08a10':'#a8222c');
+  if(m.elite||m.boss){ctx.font='bold 10px system-ui,sans-serif';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,0.8)';ctx.strokeText(m.label,p[0],p[1]-9);ctx.fillStyle=m.boss?'#ffc53d':'#c79bff';ctx.fillText(m.label,p[0],p[1]-9);}}
+ ctx.lineJoin='round';
+ for(i=0;i<floats.length;i++){var fl=floats[i],age=0.8-fl.t,pop=age<0.1?1.6-age*6:1,q=R3D.proj(fl.x,fl.y+20,2.2);if(!q)continue;ctx.globalAlpha=clamp(fl.t*2.5,0,1);ctx.font='bold '+Math.round((fl.big?17:12)*pop)+'px system-ui,sans-serif';ctx.lineWidth=fl.big?4:3;ctx.strokeStyle='rgba(0,0,0,0.85)';ctx.strokeText(fl.txt,q[0],q[1]);ctx.fillStyle=fl.col;ctx.fillText(fl.txt,q[0],q[1]);}ctx.globalAlpha=1;
+ if(flashT>0){ctx.fillStyle='rgba('+flashC+','+Math.min(0.35,flashT*0.9)+')';ctx.fillRect(0,0,VW,VH);}
+ ctx.textBaseline='alphabetic';hud();}
 var HIMG={};
 function hud(){
  ctx.textAlign='left';ctx.textBaseline='middle';ctx.font='11px system-ui,sans-serif';
@@ -2135,8 +2148,10 @@ function skTip(sk){var S2=SK[sk];if(!S2)return;var W=Math.min(330,VW-40),x=VW-W-
 
 var last=0,hitStop=0,flashT=0,flashC='255,255,255';
 function frame(ts){var dt=Math.max(0,Math.min(0.05,(ts-last)/1000||0));last=ts;if(flashT>0)flashT-=dt;if(state==='play'&&BGN)setBg(null);if(hitStop>0){hitStop-=dt;dt*=0.18;}if(state==='play')update(dt);draw();fsPos();requestAnimationFrame(frame);}
-window.__game={stashS:stashS,getS:function(){return {secret:secret,map:map,chests:chests,hid:hid,seen:seen,vis:vis,MW:MW,AH:AH};},crack:crack,nextFloor:nextFloor,getF:function(){return {floor:floor,rift:rift,arena:arena,down:down,mons:mons,orbs:orbs};},gear:gear,smith:smith,equip:equip,genItem:genItem,genUnique:genUnique,B:B,wear:wear,city:city,gate:gate,guild:guild,alch:alch,temple:temple,treas:treas,saves:saves,recall:recall,finish:finish,NODES:NODES,canTake:canTake,canDrop:canDrop,treeOpen:treeOpen,resetM:function(){MC=null;},cast:cast,newChar:newChar,sheet:sheet,derive:derive,char:function(){return C;},start:start,update:update,get:function(){return {hero:hero,mons:mons,state:state,rooms:rooms,stones:stones,kills:kills,total:total};},attack:attack,dodge:dodge,input:input,ext:function(){return {traps:traps,chests:chests,drops:drops,closedF:closedF,timeLeft:timeLeft,floor:floor,shots:shots,swing:swing,down:down,portal:portal};},setTime:function(v){timeLeft=v;},gradeRoll:gradeRoll,doSkill:doSkill,orderItem:orderItem,ORDL:ORDL,ESS:ESS,TYPES:TYPES,FLOORS:FLOORS,SK:SK};
+window.__game={stashS:stashS,getS:function(){return {secret:secret,map:map,chests:chests,hid:hid,seen:seen,vis:vis,MW:MW,AH:AH};},crack:crack,nextFloor:nextFloor,getF:function(){return {floor:floor,rift:rift,arena:arena,down:down,mons:mons,orbs:orbs};},gear:gear,smith:smith,equip:equip,genItem:genItem,genUnique:genUnique,B:B,wear:wear,city:city,gate:gate,guild:guild,alch:alch,temple:temple,treas:treas,saves:saves,recall:recall,finish:finish,NODES:NODES,canTake:canTake,canDrop:canDrop,treeOpen:treeOpen,resetM:function(){MC=null;},cast:cast,newChar:newChar,sheet:sheet,derive:derive,char:function(){return C;},start:start,update:update,w3:function(){return {map:map,seen:seen,vis:vis,MW:MW,MH:MH,T:T,floor:floor,hero:hero,mons:mons,portal:portal,down:down,rift:rift,drops:drops,orbs:orbs,chests:chests,shots:shots,eshots:eshots,traps:traps,parts:parts,ehz:ehz,swing:swing,fxs:fxs,rings:rings,elapsed:elapsed,state:state,dark:dark,closedF:closedF,VW:VW,VH:VH,C:C,B:B,TYPES:TYPES,MV:MV,hsh:hsh,seesM:seesM,QC:QC,ESS:ESS,CLSR:CLSR,BGN:BGN,FLOORS:FLOORS,shake:shake,flashT:flashT};},
+ get:function(){return {hero:hero,mons:mons,state:state,rooms:rooms,stones:stones,kills:kills,total:total};},attack:attack,dodge:dodge,input:input,ext:function(){return {traps:traps,chests:chests,drops:drops,closedF:closedF,timeLeft:timeLeft,floor:floor,shots:shots,swing:swing,down:down,portal:portal};},setTime:function(v){timeLeft=v;},gradeRoll:gradeRoll,doSkill:doSkill,orderItem:orderItem,ORDL:ORDL,ESS:ESS,TYPES:TYPES,FLOORS:FLOORS,SK:SK};
 setBg('title');menu();requestAnimationFrame(frame);
+try{if(localStorage.getItem('lv_3d')==='1'){var s3=document.createElement('script');s3.type='module';s3.src='./3d/r3d.js?v=1';document.head.appendChild(s3);}}catch(e){}
 })();
 </script>
 </body>
