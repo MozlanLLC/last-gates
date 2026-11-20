@@ -85,6 +85,7 @@ textarea{width:100%;box-sizing:border-box;height:72px;margin-top:8px;background:
 .lst .row{padding:6px 0;line-height:1.45}
 
 /* --- стиль подземелья --- */
+.accf{display:flex;flex-direction:column;gap:8px;max-width:360px;margin:8px auto}.accf input{font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1.5px solid #4a3c28;background:#120f14;color:#f0e6d2;outline:none;-webkit-user-select:text;user-select:text}.accf input:focus{border-color:#c8963e}
 .tipr{display:none;font-size:12px;line-height:1.45;color:#b4a68a;padding:4px 6px 8px;border-left:2px solid #8a6a3a;margin:0 0 4px;text-align:left}.trow.open+.tipr{display:block}.trow{cursor:pointer}.qi{display:inline-block;width:14px;height:14px;line-height:14px;border-radius:7px;border:1px solid #5a4a30;color:#b48a4a;font-size:10px;text-align:center;margin-left:3px}
 .tcard{position:absolute;z-index:4;width:250px;background:linear-gradient(180deg,rgba(26,22,28,.97),rgba(14,12,16,.97));border:1.5px solid #6a5434;border-radius:12px;padding:9px 11px;box-shadow:0 8px 26px rgba(0,0,0,.7);text-align:left;font-size:12.5px;line-height:1.45;color:#c8bda8}.tcard b{font-size:14px}.tcard i{display:block;color:#9a8f7a;font-style:normal;margin-top:4px}.tcard button{margin:7px 6px 0 0;min-width:0;min-height:34px;padding:4px 14px;font-size:13px}
 .tbk{position:sticky;top:-20px;z-index:7;display:flex;justify-content:flex-start;margin:-14px 0 2px;padding:8px 0;pointer-events:none}
@@ -663,7 +664,16 @@ var SN=['СИЛ','ЛВК','ВЫН','ИНТ','ПРН','МЕН'];
 var SEC=[['hp','ХП'],['mp','МП'],['cp','ЦП'],['acc','Точность'],['eva','Уклонение'],['crit','Шанс крита'],['critp','Сила крита'],['pdef','Физ. защита'],['mdef','Маг. защита'],['aspd','Скорость атаки'],['cspd','Скорость каста']];
 var XP1={gob:60,sling:60,slime:60,mini:30,guard:80,elite:150},XPR={gob:8,sling:9,slime:10,mini:4,guard:18,elite:60},XPN={sling:'первый гоблин-пращник',gob:'первый гоблин',slime:'первый слизень',mini:'первый слизнёк',guard:'первый костяной страж',elite:'первый элитный страж'};
 var C=null;
-function save(){MC=null;try{localStorage.setItem('lv_char',JSON.stringify(C));}catch(e){}}
+var API_DEF='https://89-126-221-167.sslip.io',API=API_DEF,ACC=null,cloudT=null,cloudSt='',frT=null,FRD=null,frMsg='';
+try{API=localStorage.getItem('lv_api')||API_DEF;ACC=JSON.parse(localStorage.getItem('lv_acc')||'null');}catch(e){}
+function accSet(a){ACC=a;try{if(a)localStorage.setItem('lv_acc',JSON.stringify(a));else localStorage.removeItem('lv_acc');}catch(e){}}
+function api(m,pth,b,cb){if(typeof fetch!=='function'){if(cb)cb('Нет сети');return;}var ctl=typeof AbortController!=='undefined'?new AbortController():null,tm=setTimeout(function(){if(ctl)ctl.abort();},10000),hd={'Content-Type':'application/json'};if(ACC&&ACC.token)hd.Authorization='Bearer '+ACC.token;
+ fetch(API+pth,{method:m,headers:hd,body:b?JSON.stringify(b):undefined,signal:ctl?ctl.signal:undefined}).then(function(r){return r.json().catch(function(){return {};}).then(function(j){clearTimeout(tm);if(r.status===401&&ACC&&pth!=='/api/login')accSet(null);if(cb)cb(r.ok?null:(j.error||('Ошибка '+r.status)),j);});}).catch(function(){clearTimeout(tm);if(cb)cb('Сервер недоступен');});}
+function cloudPush(now){if(!ACC||!C)return;clearTimeout(cloudT);cloudT=setTimeout(function(){var t0=C;api('PUT','/api/save',{char:C},function(e,j){if(t0!==C)return;cloudSt=e?'не сохранено в облаке: '+e:'сохранено в облаке в '+new Date().toLocaleTimeString().slice(0,5);});},now?10:2500);}
+function cloudDied(){clearTimeout(cloudT);if(ACC)api('PUT','/api/save',{died:true});}
+function heartbeat(){if(ACC&&C)api('POST','/api/status',{st:state==='play'||state==='sheet'||state==='bag'?'run':'city',f:state==='play'||state==='sheet'||state==='bag'?floor:0});}
+(function(){var a=setInterval(heartbeat,30000),b=setTimeout(heartbeat,1500);if(a&&a.unref)a.unref();if(b&&b.unref)b.unref();})();
+function save(){MC=null;try{localStorage.setItem('lv_char',JSON.stringify(C));}catch(e){}cloudPush();}
 function load(){try{var t=localStorage.getItem('lv_char');if(t){var o=JSON.parse(t);if(o&&RACES[o.race]&&o.st&&o.sec){o.ess=o.ess||[];o.stones=o.stones||[];o.sock=o.sock||{};o.pity=o.pity||{};o.tree=o.tree||[];if(o.gold===undefined){o.gold=50+(o.bank||0)*10;o.earned=(o.bank||0)*10;}o.vess=o.vess||[];o.vessels=o.vessels||0;if(o.ms===undefined)o.ms=Math.round((o.earned||0)/10);o.qtp=o.qtp||{};if(o.q===undefined)o.q=null;o.rst=o.rst||0;o.kc=o.kc||{};o.debt=!!o.debt;if(!o.eq)o.eq=starter();o.bag=o.bag||[];o.stash=o.stash||[];o.shop=o.shop||[];o.rifts=o.rifts||{};if(!o.fl)o.fl=o.floor1?{1:1}:{};C=o;MC=null;}}}catch(e){}}
 var WMF=['sword','axe','dagger','wand','gsword','gaxe','spear','bow','staff','dsword','ddagger'],WMN={dsword:['Парные мечи','sword'],ddagger:['Парные кинжалы','dagger']};
 function dualOf(){var w=C.eq.w,o=C.eq.o;if(!w||!o||!B[w.b]||!B[o.b]||B[o.b].slot!=='w')return '';var f=B[w.b].fam;return f===B[o.b].fam&&(f==='sword'||f==='dagger')?'d'+f:'';}
@@ -1522,7 +1532,7 @@ function finish(alive){setBg(alive?'gate':'death');
   if(rank()>r0)h+='<p class="pts">Новый ранг Гильдии: '+RANKS[rank()-1]+'. Десятина Врат теперь '+tax()+' золота.</p>';}
  else{var hall=[];try{hall=JSON.parse(localStorage.getItem('lv_hall')||'[]');}catch(e){}
   hall.unshift({r:C.race,l:C.lvl,f:floor,k:(C.kc&&Object.keys(C.kc).reduce(function(a,b){return a+C.kc[b];},0))||0,e:C.ess.slice(),d:Date.now(),w:C.eq.w?itName(C.eq.w):'кулаки'});hall=hall.slice(0,20);
-  try{localStorage.setItem('lv_hall',JSON.stringify(hall));localStorage.removeItem('lv_char');}catch(e){}
+  try{localStorage.setItem('lv_hall',JSON.stringify(hall));localStorage.removeItem('lv_char');}catch(e){}cloudDied();
   h='<h2>Герой погиб навсегда</h2><p class="stat">'+RACES[C.race].name+' · уровень '+C.lvl+' · пал на этаже '+floor+'</p><p>Лабиринт забирает всё: снаряжение, сундук, золото и эссенции. Найдите новый билд и дойдите до Владыки Бездны.</p>';
   h+='<p>Убито монстров за спуск: '+kills+' · время в Лабиринте: '+tm+'</p><button id="go">Новый герой</button>';
   box.innerHTML=h;ui.className='';ui.scrollTop=0;C=null;MC=null;on('go',raceSelect);return;}
@@ -1532,10 +1542,30 @@ function finish(alive){setBg(alive?'gate':'death');
 }
 function city(){setBg('city');if(C&&C.test)C.test=false;
  show('<h1>Оплот</h1><p>'+(gearIcon()?'<img src="'+gearIcon()+'" width="52" height="52" style="vertical-align:middle;margin-right:6px;border-radius:50%;background:#151a2a;border:1.5px solid '+(C.sp+C.pp+C.tp>0?'#ffc53d':'#2f3750')+'">':'')+RACES[C.race].name+' · уровень '+C.lvl+' · ранг Гильдии: '+RANKS[rank()-1]+'</p><p class="stat">Золото: '+C.gold+(C.debt?' · есть долг перед Казначейством':'')+'</p><div class="races">'+
-  cb('gate','Врата Лабиринта','Спуск в Лабиринт · десятина '+tax()+' золота','gate','#c9b8ff','gateb')+cb('hero','Герой','Характеристики, эссенции, камни, древо'+(C.sp+C.pp+C.tp>0?'<br><span style="color:#ffc53d">есть очки!</span>':''),'heroI','#e0c48a',C.sp+C.pp+C.tp>0?'glw':'')+cb('gear','Снаряжение','Надетые вещи и сумка: '+C.bag.length+' из 20','armor','#6aa5ff')+cb('stash','Сундук','Склад вещей: '+((C.stash||[]).length)+' из 40','chest','#d8a060')+cb('smith','Кузница','Покупка, улучшение, заказ','anvil','#ff8a3d')+cb('guild','Гильдия','Ранг и бестиарий','banner','#e5484d')+cb('alch','Алхимик','Сосуды и камни возврата','flask','#6fdc8c')+cb('temple','Храм','Эссенции и пассивное древо','temple','#9b7bff')+cb('treas','Казначейство','Десятина и долги','coins','#ffc53d')+cb('saves','Настройки','Звук, новый герой','cog','#8f99b3')+
+  cb('gate','Врата Лабиринта','Спуск в Лабиринт · десятина '+tax()+' золота','gate','#c9b8ff','gateb')+cb('hero','Герой','Характеристики, эссенции, камни, древо'+(C.sp+C.pp+C.tp>0?'<br><span style="color:#ffc53d">есть очки!</span>':''),'heroI','#e0c48a',C.sp+C.pp+C.tp>0?'glw':'')+cb('gear','Снаряжение','Надетые вещи и сумка: '+C.bag.length+' из 20','armor','#6aa5ff')+cb('stash','Сундук','Склад вещей: '+((C.stash||[]).length)+' из 40','chest','#d8a060')+cb('smith','Кузница','Покупка, улучшение, заказ','anvil','#ff8a3d')+cb('guild','Гильдия','Ранг и бестиарий','banner','#e5484d')+cb('friends','Друзья',ACC?'Ваш код: '+ACC.nick+'#'+ACC.tag:'Нужен аккаунт','friends','#6fdc8c')+cb('alch','Алхимик','Сосуды и камни возврата','flask','#6fdc8c')+cb('temple','Храм','Эссенции и пассивное древо','temple','#9b7bff')+cb('treas','Казначейство','Десятина и долги','coins','#ffc53d')+cb('saves','Настройки','Звук, новый герой','cog','#8f99b3')+
   '</div>');
- on('gate',gate);on('hero',function(){sheet('camp');});on('gear',function(){gsel=null;gear('camp');});on('stash',function(){ssel=null;stashS();});on('smith',function(){smith();});on('guild',guild);on('alch',alch);on('temple',temple);on('treas',treas);on('saves',saves);
+ on('gate',gate);on('hero',function(){sheet('camp');});on('gear',function(){gsel=null;gear('camp');});on('stash',function(){ssel=null;stashS();});on('smith',function(){smith();});on('guild',guild);on('friends',friends);on('alch',alch);on('temple',temple);on('treas',treas);on('saves',saves);
 }
+ICO.friends=['M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z','M2 20c.8-3.5 3.4-5.5 7-5.5s6.2 2 7 5.5M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.4 2.4 4 5.2'];
+function frSt(f){return f.st==='run'?'в Лабиринте, этаж '+f.f:f.st==='arena'?'на Арене':f.st==='city'?'в городе':'не в сети';}
+function friends(){setBg('guild');clearInterval(frT);
+ if(!ACC){show(head('Друзья')+'<p>Чтобы добавлять друзей, войдите в аккаунт или создайте его в Настройках.</p><button id="tos">Открыть Настройки</button>'+back());on('bk',city);on('tos',saves);return;}
+ var draw=function(){var d=FRD,h=head('Друзья');h+='<p>Ваш код: <b style="color:#ffe2a8;font-size:18px">'+ACC.nick+'#'+ACC.tag+'</b><br><small>Сообщите его другу, чтобы он добавил вас.</small></p>';
+  h+='<div class="accf"><input id="frc" maxlength="21" placeholder="Код друга, например Ник#1234" autocapitalize="off" spellcheck="false"></div><button id="fra">Добавить в друзья</button><p id="frm" class="pts" style="min-height:18px">'+frMsg+'</p>';
+  if(!d){h+='<p>Загружаю список…</p>';}
+  else{if(d.incoming.length){h+='<p class="pts">Заявки в друзья</p><div class="lst">';d.incoming.forEach(function(x){h+='<div class="row"><span><strong>'+x.nick+'#'+x.tag+'</strong> хочет добавить вас</span><button class="pb fac" data-id="'+x.id+'">Принять</button><button class="pb sec2 fdc" data-id="'+x.id+'" style="min-width:0">Отклонить</button></div>';});h+='</div>';}
+   h+='<p class="pts">Друзья · '+d.friends.length+' из 50</p><div class="lst">';
+   if(!d.friends.length)h+='<div class="row"><span>Пока никого. Добавьте друга по его коду.</span></div>';
+   d.friends.forEach(function(x){h+='<div class="row"><span><i style="display:inline-block;width:10px;height:10px;border-radius:5px;margin-right:6px;background:'+(x.online?'#6fdc8c':'#4a4f60')+'"></i><strong>'+x.nick+'</strong><small style="color:#8f99b3">#'+x.tag+'</small><br><small>'+(x.race?RACES[x.race].name+' · ур. '+x.lvl+' · '+RANKS[x.rank-1]:'нет героя')+' · '+frSt(x)+'</small></span><button class="pb sec2 frm" data-id="'+x.id+'" style="min-width:0">Удалить</button></div>';});
+   h+='</div>';if(d.outgoing.length)h+='<p style="font-size:12px">Ждут ответа: '+d.outgoing.map(function(x){return x.nick+'#'+x.tag;}).join(', ')+'</p>';
+   h+='<p style="font-size:12px;color:#8f99b3">Совместный спуск до 3 героев и Арена появятся на следующих этапах.</p>';}
+  var y=ui.scrollTop;show(h+back());ui.scrollTop=y;on('bk',function(){clearInterval(frT);city();});on('bkt',function(){clearInterval(frT);});
+  on('fra',function(){var c=document.getElementById('frc').value.trim();if(!c)return;frMsg='Отправляю…';api('POST','/api/friends/add',{code:c},function(e,j){frMsg=e||j.msg||'Готово';load2();});});
+  var bs=box.querySelectorAll?box.querySelectorAll('.fac,.fdc,.frm'):[];for(var i=0;i<bs.length;i++)bs[i].onclick=function(){var id=+this.getAttribute('data-id'),c=this.className;
+   if(c.indexOf('frm')>=0&&this.getAttribute('data-ok')!=='1'){this.setAttribute('data-ok','1');this.textContent='Точно?';return;}
+   api('POST',c.indexOf('fac')>=0?'/api/friends/accept':c.indexOf('fdc')>=0?'/api/friends/decline':'/api/friends/remove',{id:id},function(e){frMsg=e||'';load2();});};};
+ var load2=function(){api('GET','/api/friends',null,function(e,j){if(state!=='menu'||!document.getElementById('fra'))return;if(e){frMsg=e;if(!ACC){friends();return;}}else FRD=j;draw();});};
+ frMsg='';draw();load2();frT=setInterval(function(){if(!document.getElementById('fra')){clearInterval(frT);return;}load2();},15000);}
 function gate(){setBg('gate');
  var t=tax(),h=head('Врата')+'<p>Десятина Врат за спуск: '+t+' золота. Врата открыты 15 минут.</p><div id="qbx">'+qBox('gate')+'</div>',fq,lf=C.lf||(C.lf={q:{},g:{}});
  h+='<p class="pts">Фильтр добычи · отмеченное не поднимается</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:6px">';
@@ -1613,12 +1643,25 @@ function fsUpd(){var b=document.getElementById('fsb');if(!b||!b.style)return;if(
  b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c9d1e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(on2?'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5':'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5')+'"></path></svg>';b.setAttribute('aria-label',on2?'Выйти из полного экрана':'Полный экран');b.title=on2?'Выйти из полного экрана':'Полный экран';}
 (function(){var b=document.getElementById('fsb');if(b&&b.addEventListener){b.addEventListener('click',function(e){if(e&&e.stopPropagation)e.stopPropagation();fsToggle();});b.addEventListener('pointerdown',function(e){if(e&&e.stopPropagation)e.stopPropagation();});}
  if(document.addEventListener){document.addEventListener('fullscreenchange',fsUpd);document.addEventListener('webkitfullscreenchange',fsUpd);}fsUpd();})();
+function accHtml(){if(ACC)return '<p class="pts">Аккаунт</p><p>Вы вошли как <b style="color:#ffe2a8">'+ACC.nick+'#'+ACC.tag+'</b>. '+(cloudSt?cloudSt[0].toUpperCase()+cloudSt.slice(1)+'.':'Герой сохраняется в облако сам после каждого изменения.')+'</p><button id="acsync" class="sec2">Сохранить в облако сейчас</button><button id="acout" class="sec2">Выйти из аккаунта</button>';
+ return '<p class="pts">Аккаунт</p><p>С аккаунтом герой хранится на сервере, появляются друзья, а позже — совместный спуск и Арена.</p><div class="accf"><input id="acn" maxlength="16" placeholder="Ник" autocomplete="username" autocapitalize="off" spellcheck="false"><input id="acp" type="password" maxlength="64" placeholder="Пароль, от 6 символов" autocomplete="current-password"></div><button id="acin">Войти</button><button id="acreg" class="sec2">Создать аккаунт</button><p id="acmsg" class="pts" style="min-height:18px"></p>';}
+function accAfter(j,fresh){accSet({token:j.token,nick:j.nick,tag:j.tag});var m=document.getElementById('acmsg');if(m)m.textContent='Проверяю облако…';
+ api('GET','/api/save',null,function(e,d){if(e){if(m)m.textContent=e;return;}
+  if(d&&d.char&&!fresh){var cc=d.char;if(!C||(C.race===cc.race&&C.lvl===cc.lvl&&C.gold===cc.gold)){accTake(cc);return;}
+   show('<h2>Какого героя оставить?</h2><p>В облаке: <b>'+RACES[cc.race].name+', уровень '+cc.lvl+', золото '+cc.gold+'</b>.</p><p>На этом устройстве: <b>'+RACES[C.race].name+', уровень '+C.lvl+', золото '+C.gold+'</b>.</p><p>Второй герой будет стёрт.</p><button id="tkc">Взять героя из облака</button><button id="tkl" class="sec2">Оставить героя с устройства</button>');
+   on('tkc',function(){accTake(cc);});on('tkl',function(){cloudPush(true);saves();});return;}
+  if(C)cloudPush(true);saves();});}
+function accTake(cc){try{localStorage.setItem('lv_char',JSON.stringify(cc));}catch(e){}load();MC=null;cloudSt='загружено из облака';if(C)city();else raceSelect();}
 function saves(){setBg('city');
  var code='';try{code=btoa(unescape(encodeURIComponent(JSON.stringify(C))));}catch(e){}
- var h='<h2>Настройки и сохранение</h2><p>Игра сохраняется в памяти устройства сама. Смерть в Лабиринте окончательна, перенести или восстановить героя нельзя.</p>'+(fsCan()?'<button id="fsm" class="sec2">'+(fsEl()?'Выйти из полного экрана':'Полный экран')+'</button>':'')+'<button id="snd" class="sec2">Звук: '+(C.mute?'выключен':'включён')+'</button><button id="re" class="sec2">Новый герой</button>';
+ var h='<h2>Настройки и сохранение</h2>'+accHtml()+'<p class="pts">Игра</p><p>Смерть в Лабиринте окончательна, перенести или восстановить героя нельзя.</p>'+(fsCan()?'<button id="fsm" class="sec2">'+(fsEl()?'Выйти из полного экрана':'Полный экран')+'</button>':'')+'<button id="snd" class="sec2">Звук: '+(C.mute?'выключен':'включён')+'</button><button id="re" class="sec2">Новый герой</button>';
  show(h+back());on('bk',city);
  on('tst',function(){C.test=!C.test;save();saves();});
  on('fsm',function(){fsToggle();setTimeout(saves,400);});
+ var acMsg=function(t){var m=document.getElementById('acmsg');if(m)m.textContent=t;},acGo=function(path,fresh){var n=document.getElementById('acn').value.trim(),pw=document.getElementById('acp').value;if(!n||!pw){acMsg('Введите ник и пароль');return;}acMsg('Подключаюсь…');api('POST',path,{nick:n,pass:pw},function(e,j){if(e){acMsg(e);return;}accAfter(j,fresh);});};
+ on('acin',function(){acGo('/api/login',false);});on('acreg',function(){acGo('/api/register',true);});
+ on('acsync',function(){this.textContent='Сохраняю…';var b=this;api('PUT','/api/save',{char:C},function(e){cloudSt=e?'не сохранено в облаке: '+e:'сохранено в облаке в '+new Date().toLocaleTimeString().slice(0,5);saves();});});
+ on('acout',function(){if(this.getAttribute('data-ok')!=='1'){this.setAttribute('data-ok','1');this.textContent='Точно выйти? Герой останется на устройстве';return;}api('POST','/api/logout');accSet(null);cloudSt='';saves();});
  on('snd',function(){C.mute=!C.mute;save();if(!C.mute){audioOn();sfx('pick');}saves();});
  var re=document.getElementById('re');on('re',function(){if(re.getAttribute('data-ok')){raceSelect();}else{re.setAttribute('data-ok','1');re.textContent='Стереть героя и начать заново?';}});
 }
@@ -1716,7 +1759,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.36 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.37 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
