@@ -674,7 +674,7 @@ function cloudDied(){clearTimeout(cloudT);if(ACC)api('PUT','/api/save',{died:tru
 function heartbeat(){if(ACC&&C)api('POST','/api/status',{st:state==='play'||state==='sheet'||state==='bag'?'run':'city',f:state==='play'||state==='sheet'||state==='bag'?floor:0});}
 (function(){var a=setInterval(heartbeat,30000),b=setTimeout(heartbeat,1500);if(a&&a.unref)a.unref();if(b&&b.unref)b.unref();})();
 function save(){MC=null;try{localStorage.setItem('lv_char',JSON.stringify(C));}catch(e){}cloudPush();}
-function load(){try{var t=localStorage.getItem('lv_char');if(t){var o=JSON.parse(t);if(o&&RACES[o.race]&&o.st&&o.sec){o.ess=o.ess||[];o.stones=o.stones||[];o.sock=o.sock||{};o.pity=o.pity||{};o.tree=o.tree||[];if(o.gold===undefined){o.gold=50+(o.bank||0)*10;o.earned=(o.bank||0)*10;}o.vess=o.vess||[];o.vessels=o.vessels||0;if(o.ms===undefined)o.ms=Math.round((o.earned||0)/10);o.qtp=o.qtp||{};if(o.q===undefined)o.q=null;o.rst=o.rst||0;o.kc=o.kc||{};o.debt=!!o.debt;if(!o.eq)o.eq=starter();o.bag=o.bag||[];o.stash=o.stash||[];o.shop=o.shop||[];o.rifts=o.rifts||{};if(!o.fl)o.fl=o.floor1?{1:1}:{};C=o;MC=null;}}}catch(e){}}
+function load(){try{var t=localStorage.getItem('lv_char');if(t){var o=JSON.parse(t);if(o&&RACES[o.race]&&o.st&&o.sec){o.ess=o.ess||[];o.stones=o.stones||[];o.sock=o.sock||{};o.pity=o.pity||{};o.tree=o.tree||[];if(o.gold===undefined){o.gold=50+(o.bank||0)*10;o.earned=(o.bank||0)*10;}o.vess=o.vess||[];o.vessels=o.vessels||0;if(o.ms===undefined)o.ms=Math.round((o.earned||0)/10);o.qtp=o.qtp||{};if(o.q===undefined)o.q=null;[o.q].concat(o.qOff||[]).forEach(function(q){if(q&&q.t==='stones'&&q.n<500&&!q.done)q.n=500;});o.rst=o.rst||0;o.kc=o.kc||{};o.debt=!!o.debt;if(!o.eq)o.eq=starter();o.bag=o.bag||[];o.stash=o.stash||[];o.shop=o.shop||[];o.rifts=o.rifts||{};if(!o.fl)o.fl=o.floor1?{1:1}:{};C=o;MC=null;}}}catch(e){}}
 var WMF=['sword','axe','dagger','wand','gsword','gaxe','spear','bow','staff','dsword','ddagger'],WMN={dsword:['Парные мечи','sword'],ddagger:['Парные кинжалы','dagger']};
 function dualOf(){var w=C.eq.w,o=C.eq.o;if(!w||!o||!B[w.b]||!B[o.b]||B[o.b].slot!=='w')return '';var f=B[w.b].fam;return f===B[o.b].fam&&(f==='sword'||f==='dagger')?'d'+f:'';}
 function wmBon(f){var d=dualOf();return 1+0.025*wmL(f)+(d&&f===d.slice(1)?0.025*wmL(d):0);}
@@ -801,7 +801,8 @@ function genColo(){MW=36;AH=26;MH=28;map=new Uint8Array(MW*MH);seen=new Uint8Arr
  var cx=18,cy=13,i,j;for(j=0;j<MH;j++)for(i=0;i<MW;i++){var dx=(i+0.5-cx)/15.5,dy=(j+0.5-cy)/10.5;if(dx*dx+dy*dy<=1)map[j*MW+i]=1;seen[j*MW+i]=1;}
  [[11,8],[23,8],[11,16],[23,16]].forEach(function(q){for(j=q[1];j<q[1]+2;j++)for(i=q[0];i<q[0]+2;i++)map[j*MW+i]=0;});
  rooms=[{x:4,y:4,w:28,h:18,props:[],rune:true,rug:false}];}
-function coloStart(){var gi=glr(),fee=GLF[gi];if(C.gold<fee)return;C.gold-=fee;save();
+var COLO_FREE=true;function cfee(gi){return COLO_FREE?0:GLF[gi];}
+function coloStart(){var gi=glr(),fee=cfee(gi);if(C.gold<fee)return;C.gold-=fee;save();
  closedF=false;qClr=0;downMsg=0;floor=1;elapsed=0;dark=0;stones=0;kills=0;shake=0;msg='';msgT=0;total=0;buildFloor(true);
  floor=3;genColo();mons=[];items=[];chests=[];drops=[];orbs=[];traps=[];decals=[];ehz=[];shots=[];eshots=[];down=null;rift=null;portal={x:-1e5,y:-1e5};
  hero.x=5.5*T;hero.y=13.5*T;hero.fx=1;hero.fy=0;hero.flask=Math.min(2,hero.fMax||2);hero.mflask=2;hero.hp=hero.mhp;hero.mp=hero.mmp;hero.cp=hero.mcp;
@@ -818,17 +819,17 @@ function coloEnd(res){var c=colo;if(!c)return;colo=null;state='over';joy=null;in
   if(Math.random()<0.05){var fl=[[1,2],[3,4],[5,6],[7,8],[9,10]][gi0],pool=[];for(var f=fl[0];f<=fl[1];f++){[BASEF[f-1].t,ALTF[f]&&ALTF[f].t].forEach(function(L){(L||[]).forEach(function(k){if(ESS[k]&&pool.indexOf(k)<0)pool.push(k);});});}
    if(gi0===4)for(var bq=1;bq<=10;bq++)if(ESS['b'+bq])pool.push('b'+bq);
    if(pool.length){var ek=pool[ri(pool.length)];if(C.vess.length<3){C.vess.push(ek);C.vessels=Math.max(C.vessels,C.vess.length);rw.push('эссенция «'+ESS[ek].name+'» в сосуде');}else{C.gold+=essPrice(ek);rw.push('эссенция «'+ESS[ek].name+'» продана за '+essPrice(ek)+': все сосуды заняты');}}}}
- else if(res==='draw'){var bk=Math.round(c.fee/2);C.gold+=bk;rw.push('возврат половины взноса: '+bk+' золота');}
+ else if(res==='draw'&&c.fee){var bk=Math.round(c.fee/2);C.gold+=bk;rw.push('возврат половины взноса: '+bk+' золота');}
  save();setBg('gate');
  h='<h2>'+(res==='win'?'Победа!':res==='loss'?'Поражение':'Ничья')+'</h2><p class="stat">'+(res==='win'?'Тень повержена.':res==='loss'?'Вы пали на песке Колизея. На Арене смерть не окончательна: герой цел.':'Время вышло, оба гладиатора на ногах.')+'</p>';
  h+='<p>Рейтинг: '+old+' → <b style="color:'+(dr>=0?'#6fdc8c':'#ff9aa0')+'">'+a.r+'</b> ('+(dr>=0?'+':'')+dr+') · ранг <b>'+GLR[gi]+'</b>'+(gi!==gi0?(gi>gi0?' — повышение!':' — понижение'):'')+'</p>';
  if(rw.length)h+='<p class="pts">'+rw.join('<br>')+'</p>';
- h+='<button id="cagain">Ещё бой · взнос '+GLF[gi]+'</button><button id="ccity" class="sec2">В город</button>';
- show(h);on('cagain',function(){if(C.gold<GLF[glr()]){this.textContent='Не хватает золота';return;}coloStart();});on('ccity',city);}
-function coloScreen(){setBg('gate');var gi=glr(),a=C.ar,fee=GLF[gi],h=head('Колизей');
- h+='<p class="pts" style="color:#6fdc8c">Тестовый режим: Арена открыта всегда</p><p>Обычно Колизей открывается каждый час в :00 по Ташкенту на 10 минут. Бой 1 на 1 до 3 минут, соперник подбирается по рейтингу. Если оба живы — ничья.</p>';
+ h+='<button id="cagain">Ещё бой'+(cfee(gi)?' · взнос '+cfee(gi):' · бесплатно')+'</button><button id="ccity" class="sec2">В город</button>';
+ show(h);on('cagain',function(){if(C.gold<cfee(glr())){this.textContent='Не хватает золота';return;}coloStart();});on('ccity',city);}
+function coloScreen(){setBg('gate');var gi=glr(),a=C.ar,fee=cfee(gi),h=head('Колизей');
+ h+='<p class="pts" style="color:#6fdc8c">Тестовый режим: Арена открыта всегда и бесплатно</p><p>Обычно Колизей открывается каждый час в :00 по Ташкенту на 10 минут. Бой 1 на 1 до 3 минут, соперник подбирается по рейтингу. Если оба живы — ничья.</p>';
  h+='<div class="lst"><div class="row" style="border-left:3px solid #c8963e;padding-left:8px"><span><strong style="font-size:18px;color:#ffe2a8">Ранг '+GLR[gi]+'</strong> · рейтинг '+a.r+'<br><small>Побед '+a.w+' · поражений '+a.l+' · ничьих '+a.d+(gi<4?' · до ранга '+GLR[gi+1]+': '+(GLT[gi+1]-a.r):'')+'</small></span></div></div>';
- h+=C.gold>=fee?'<button id="cgo">На Арену · взнос '+fee+' золота</button>':'<p class="pts">Взнос '+fee+' золота — не хватает золота</p>';
+ h+=C.gold>=fee?'<button id="cgo">На Арену'+(fee?' · взнос '+fee+' золота':' · бесплатно (тест)')+'</button>':'<p class="pts">Взнос '+fee+' золота — не хватает золота</p>';
  h+='<p style="font-size:12px;color:#8f99b3">Сейчас соперник — «тень»: гладиатор под управлением ИИ, его сила подобрана под ваш рейтинг. Живые соперники появятся, когда бой будет считать сервер.</p>';
  h+='<p class="pts">Правила боя</p><div class="lst" style="text-align:left">'+[
   'Удары сначала снимают ЦП, потом ХП. ЦП не восстанавливается до конца боя.',
@@ -1441,7 +1442,7 @@ function qGen(tpOK,ex){var r=rank(),mf=qMaxF(),hi=Math.min(10,mf+1),lo=Math.max(
  else if(q.t==='boss'){q.n=1;q.d=3;}
  else if(q.t==='clear'){q.n=tpOK?2:1;q.d=2;}
  else if(q.t==='deep'){q.f=Math.min(10,Math.max(f,mf+(tpOK||r>=3?1:0)));q.n=1;q.d=q.f>mf?3:2;}
- else if(q.t==='stones'){q.n=Math.round((12*mf+15*r)*(tpOK?1.4:1));q.d=2;}
+ else if(q.t==='stones'){q.n=Math.round((500+120*(mf-1)+100*(r-1))*(tpOK?1.4:1)/10)*10;q.d=2;}
  else if(q.t==='total'){q.n=40+15*r+ri(20);q.d=1;}
  else {q.t='rb';q.f=10;q.n=1;q.d=3;}
  var g=Math.round((5000+2500*(r-1))*(0.75+0.3*q.d)*(0.9+Math.random()*0.3)/100)*100;q.rw={g:Math.max(5000,g)};
@@ -1804,7 +1805,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.39 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.40 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
