@@ -670,6 +670,8 @@ function gen(f,hasRift){
  while(outT.length){var bd=1e9,bi=0,bo=0;for(var q1=0;q1<inT.length;q1++)for(var q2=0;q2<outT.length;q2++){var ca=cen(rooms[inT[q1]]),cb=cen(rooms[outT[q2]]),dd=Math.abs(ca.i-cb.i)+Math.abs(ca.j-cb.j);if(dd<bd){bd=dd;bi=inT[q1];bo=q2;}}
   var to=outT.splice(bo,1)[0];walk(cen(rooms[bi]),cen(rooms[to]));inT.push(to);}
  for(n=0;n<1+ri(2)&&rooms.length>3;n++){var ra=ri(rooms.length),rb2=ri(rooms.length);if(ra!==rb2&&Math.abs(cen(rooms[ra]).i-cen(rooms[rb2]).i)+Math.abs(cen(rooms[ra]).j-cen(rooms[rb2]).j)<30)walk(cen(rooms[ra]),cen(rooms[rb2]));}
+ for(var sp=0;sp<3;sp++){var chg=0;for(j=2;j<AH-1;j++)for(i=2;i<MW-2;i++){var ix=j*MW+i;if(map[ix])continue;var fN=map[ix-MW]?1:0,fS=map[ix+MW]?1:0,fW=map[ix-1]?1:0,fE=map[ix+1]?1:0,f8=fN+fS+fW+fE+(map[ix-MW-1]?1:0)+(map[ix-MW+1]?1:0)+(map[ix+MW-1]?1:0)+(map[ix+MW+1]?1:0);
+  if((fN&&fS)||(fW&&fE)||fN+fS+fW+fE>=3||f8>=5){map[ix]=1;chg++;}}if(!chg)break;}
  for(k=0;k<rooms.length;k++){var rq=rooms[k];rq.props=[];if(k>0&&Math.random()<0.45){var cs=[[rq.x,rq.y],[rq.x+rq.w-1,rq.y],[rq.x,rq.y+rq.h-1],[rq.x+rq.w-1,rq.y+rq.h-1]];for(var cq=0;cq<4;cq++)if(Math.random()<0.5)rq.props.push({i:cs[cq][0],j:cs[cq][1],k:['barrel','crate','pot','bones'][ri(4)],sd:Math.random()});}
   rq.rune=k>0&&rq.w>=7&&rq.h>=6&&Math.random()<0.3;rq.rug=!rq.rune&&k>0&&rq.w>=7&&Math.random()<0.25;}
  for(k=1;k<rooms.length;k++){r=rooms[k];
@@ -1576,7 +1578,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.30 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.31 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
