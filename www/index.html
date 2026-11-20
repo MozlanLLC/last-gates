@@ -813,7 +813,7 @@ function toast(html,acts,ms){var t=document.getElementById('toast');if(!t){t=doc
  t.style.display='block';clearTimeout(t._tm);t._tm=setTimeout(function(){t.style.display='none';},ms||4000);}
 function wsOn(m){
  if(m.t==='hello'){MYUID=m.uid;lookSent='';heartbeat();if(coop&&coop.lostAt){coop.lostAt=0;toast('Связь восстановлена',null,2000);}}
- else if(m.t==='party'){var was=PARTY;PARTY=m.p;if(!coop)scrRefresh();}
+ else if(m.t==='party'){var was=PARTY;PARTY=m.p;if(!coop)scrRefresh();else if(!coop.duel&&coop.me&&(!m.p||m.p.state!=='run'))coopLost();}
  else if(m.t==='invite')toast('<b>'+esc(m.from)+'</b> зовёт вас в группу',[['Принять',function(){wsSend({t:'acc',pid:m.pid});}],['Отклонить',function(){wsSend({t:'dec',pid:m.pid});},'sec2']],60000);
  else if(m.t==='msg'||m.t==='err')toast(esc(m.msg),null,3500);
  else if(m.t==='start')coopBegin(m);
@@ -924,8 +924,8 @@ function coopFinishM(msg0){if(!coop)return;coop.endOK=true;finish(true);coop=nul
 function coopLost(){if(coopM())coopFinishM('Связь с группой потеряна (код '+wsLastCode+'). Вы вернулись в город с добычей');else if(coop){coop=null;say('Связь с группой потеряна, вы продолжаете один');}}
 function coopHostDeath(){coop.endOK=true;wsSend({t:'end',d:{t:'end',hd:1}});finish(false);coop=null;}
 function coopTick(dt){if(!coop||!coop.me)return;if(coop.lostAt&&Date.now()-coop.lostAt>20000){coop.lostAt=0;coopLost();return;}
- if(!coop.host){var k=Math.min(1,dt*16);for(var i=0;i<MM.length;i++){var m=MM[i];m.x+=(m.tx-m.x)*k;m.y+=(m.ty-m.y)*k;if(m.flash>0)m.flash-=dt;}
-  coop.pT-=dt;if(coop.pT<=0){coop.pT=0.05;rel({t:'p',x:Math.round(hero.x),y:Math.round(hero.y),fx:+(hero.fx||1).toFixed(2),fy:+(hero.fy||0).toFixed(2),mv:Math.abs(input.x)+Math.abs(input.y)>0.15?1:0});}
+ if(!coop.host){var k=Math.min(1,dt*20);for(var i=0;i<MM.length;i++){var m=MM[i];m.x+=(m.tx-m.x)*k;m.y+=(m.ty-m.y)*k;if(m.flash>0)m.flash-=dt;}
+  coop.pT-=dt;if(coop.pT<=0){coop.pT=0.033;rel({t:'p',x:Math.round(hero.x),y:Math.round(hero.y),fx:+(hero.fx||1).toFixed(2),fy:+(hero.fy||0).toFixed(2),mv:Math.abs(input.x)+Math.abs(input.y)>0.15?1:0});}
   coop.stT-=dt;if(coop.stT<=0){coop.stT=6;rel({t:'st',h:myStats(false)});}return;}
  for(var q in coop.al){var a=coop.al[q];a.atk-=dt;a.dCd-=dt;a.inv-=dt;a.hurt-=dt;a.cmbT=(a.cmbT||0)+dt;a.since+=dt;a.cpS=(a.cpS||0)+dt;if(a.cpS>5&&!colo)a.cp=a.mcp;
   for(var sc in a.scd)if(a.scd[sc]>0)a.scd[sc]-=dt;a.mp=Math.min(a.mmp,a.mp+(a.mreg||0)*dt);
@@ -934,7 +934,7 @@ function coopTick(dt){if(!coop||!coop.me)return;if(coop.lostAt&&Date.now()-coop.
  var pl=coopPl();pl.forEach(function(p){if(!p.down)return;p.down-=dt;var help=p.rvF!==floor&&pl.some(function(o){return o!==p&&!o.down&&dist(o,p)<44;});
   if(help){p.rv=(p.rv||0)+dt;if(p.rv>=3){p.down=0;p.rv=0;p.rvF=floor;p.hp=Math.round(p.mhp*0.3);p.inv=1.5;float(p.x,p.y-30,'Поднят!','#6fdc8c',true);}}else p.rv=0;
   if(p.down<=0&&p.hp<=0){p.down=0;if(p===coop.me){coopHostDeath();}else{p.dead=true;rel({t:'dead'},p.uid);delete coop.al[p.uid];say(p.nick+' погиб');}}});
- if(!coop)return;coop.snapT-=dt;if(coop.snapT<=0){coop.snapT=0.05;coopSnaps();}}
+ if(!coop)return;coop.snapT-=dt;if(coop.snapT<=0){coop.snapT=0.033;coopSnaps();}}
 function coopSnaps(){var pl=coopPl(),P=pl.map(function(p){return [p===coop.me?MYUID:p.uid,Math.round(p.x),Math.round(p.y),+(p.fx||1).toFixed(2),+(p.fy||0).toFixed(2),Math.round(p.hp),p.mhp,Math.round(p.cp),p.mcp,p.down?Math.ceil(p.down):0,p.rv?+(p.rv/3).toFixed(2):0,p.mv||(p===coop.me&&Math.abs(input.x)+Math.abs(input.y)>0.15)?1:0];});
  var fq=coop.fq;coop.fq=[];var al=0;for(var i=0;i<mons.length;i++)if(mons[i].hp>0&&!mons[i].boss&&!mons[i].rb)al++;
  var base={t:'s',tl:+timeLeft.toFixed(1),dk:dark,cl:closedF?1:0,p:P,rf:rift?[rift.used?1:0,rift.exit?1:0]:null,dn:down?[down.x,down.y,down.home?1:0,down.rb?1:0]:null,al:al};
@@ -1995,7 +1995,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.43 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.44 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
