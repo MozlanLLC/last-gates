@@ -795,7 +795,52 @@ function darkWave(){var F=FLOORS[floor-1],n=Math.ceil((floorN||10)/6)+dark,put=0
  while(put<n&&tries<500){tries++;var r=rooms[ri(rooms.length)],x=(r.x+1+Math.random()*(r.w-2))*T,y=(r.y+1+Math.random()*(r.h-2))*T;if(Math.abs(x-hero.x)+Math.abs(y-hero.y)<320||blocked(x,y,16))continue;
   var tp=F.t[ri(F.t.length)],mm=spawn(tp,x,y,Math.random()<0.12);mm.hp=mm.mhp=Math.round(mm.mhp*(1.5+0.15*dark));mm.dmg*=1.3+0.1*dark;if(!mm.elite)mm.label='Порождение тьмы: '+TYPES[tp].name;mm.back=1;mm.state='chase';burst(x,y,'#7a4aba',12);put++;total++;}
  say('Тьма усиливается: новая волна, '+put+' монстров');sfx('boss');}
-function start(){closedF=false;qClr=0;downMsg=0;floor=1;timeLeft=GATE_TIME;elapsed=0;dark=0;stones=0;kills=0;shake=0;msg='';msgT=0;total=0;buildFloor(true);state='play';ui.className='hide';}
+var colo=null,GLR=['D','C','B','A','S'],GLT=[0,1200,1400,1600,1800],GLF=[1000,2500,4500,7000,10000],GLE=[0,0,0.1,0.2,0.35],SHN=['Кассий','Брут','Тарвин','Мирра','Гракх','Ульф','Сайра','Дерек','Нима','Корвус','Велла','Арден','Торн','Ису','Ракша','Фенн'];
+function glr(){C.ar=C.ar||{r:1000,w:0,l:0,d:0};var r=0;for(var i=1;i<5;i++)if(C.ar.r>=GLT[i])r=i;return r;}
+function genColo(){MW=36;AH=26;MH=28;map=new Uint8Array(MW*MH);seen=new Uint8Array(MW*MH);vis=new Uint8Array(MW*MH);visL=[];flowD=null;flowTile=-1;hid=new Uint8Array(MW*MH);secret=null;crackHint=false;arena=null;
+ var cx=18,cy=13,i,j;for(j=0;j<MH;j++)for(i=0;i<MW;i++){var dx=(i+0.5-cx)/15.5,dy=(j+0.5-cy)/10.5;if(dx*dx+dy*dy<=1)map[j*MW+i]=1;seen[j*MW+i]=1;}
+ [[11,8],[23,8],[11,16],[23,16]].forEach(function(q){for(j=q[1];j<q[1]+2;j++)for(i=q[0];i<q[0]+2;i++)map[j*MW+i]=0;});
+ rooms=[{x:4,y:4,w:28,h:18,props:[],rune:true,rug:false}];}
+function coloStart(){var gi=glr(),fee=GLF[gi];if(C.gold<fee)return;C.gold-=fee;save();
+ closedF=false;qClr=0;downMsg=0;floor=1;elapsed=0;dark=0;stones=0;kills=0;shake=0;msg='';msgT=0;total=0;buildFloor(true);
+ floor=3;genColo();mons=[];items=[];chests=[];drops=[];orbs=[];traps=[];decals=[];ehz=[];shots=[];eshots=[];down=null;rift=null;portal={x:-1e5,y:-1e5};
+ hero.x=5.5*T;hero.y=13.5*T;hero.fx=1;hero.fy=0;hero.flask=Math.min(2,hero.fMax||2);hero.mflask=2;hero.hp=hero.mhp;hero.mp=hero.mmp;hero.cp=hero.mcp;
+ var sr=Math.round(C.ar.r+rnd(-90,90)),sf=Math.pow(2,(sr-C.ar.r)/400),eh=hero.mhp+hero.mcp,rng=Math.random()<0.4;
+ var m=spawn(rng?'marb':'mar',30.5*T,13.5*T,false);m.shadow=1;m.label='Тень · '+SHN[ri(SHN.length)]+' · ранг '+GLR[gi];m.hp=m.mhp=Math.round(eh*2*(0.9+Math.random()*0.2)*sf);m.dmg=eh/(rng?34:26)*sf;m.def=0;m.eva=12;m.spd=rng?105:135;m.st=[0,0];m.state='chase';m.r=14;m.col='#c9a0ff';
+ colo={sr:sr,fee:fee,gi:gi};timeLeft=180;say('Колизей! Бой до 3 минут. Укройтесь за столпами');state='play';ui.className='hide';}
+function coloEnd(res){var c=colo;if(!c)return;colo=null;state='over';joy=null;input.atk=false;sfx(res==='win'?'win':res==='loss'?'dead':'pick');
+ var a=C.ar,gi0=c.gi,ex=1/(1+Math.pow(10,(c.sr-a.r)/400)),sc=res==='win'?1:res==='draw'?0.5:0,dr=Math.round(32*(sc-ex)),old=a.r,low=GLT[gi0]-50;
+ a.r=Math.max(gi0>0?low:0,a.r+dr);if(res==='win')a.w++;else if(res==='loss')a.l++;else a.d++;var gi=glr(),rw=[],h;
+ if(res==='win'){var g=[ri(2),2,3,4,5][gi0],it;
+  if(Math.random()<0.02){var ws=Object.keys(UNI).filter(function(k){return B[UNI[k].b]&&B[UNI[k].b].slot==='w';});it=genUnique(g);if(ws.length){var uk=ws[ri(ws.length)];it=genItem(g,3,UNI[uk].b);it.q=4;it.u=uk;}}
+  else it=genItem(g,Math.random()<GLE[gi0]?3:(Math.random()<0.5?1:2),rollBase());
+  if(C.bag.length<20){C.bag.push(it);rw.push(itName(it)+' — в сумке');}else if((C.stash||[]).length<40){C.stash.push(it);rw.push(itName(it)+' — в сундуке');}else rw.push('нет места для вещи: сумка и сундук полны');
+  if(Math.random()<0.05){var fl=[[1,2],[3,4],[5,6],[7,8],[9,10]][gi0],pool=[];for(var f=fl[0];f<=fl[1];f++){[BASEF[f-1].t,ALTF[f]&&ALTF[f].t].forEach(function(L){(L||[]).forEach(function(k){if(ESS[k]&&pool.indexOf(k)<0)pool.push(k);});});}
+   if(gi0===4)for(var bq=1;bq<=10;bq++)if(ESS['b'+bq])pool.push('b'+bq);
+   if(pool.length){var ek=pool[ri(pool.length)];if(C.vess.length<3){C.vess.push(ek);C.vessels=Math.max(C.vessels,C.vess.length);rw.push('эссенция «'+ESS[ek].name+'» в сосуде');}else{C.gold+=essPrice(ek);rw.push('эссенция «'+ESS[ek].name+'» продана за '+essPrice(ek)+': все сосуды заняты');}}}}
+ else if(res==='draw'){var bk=Math.round(c.fee/2);C.gold+=bk;rw.push('возврат половины взноса: '+bk+' золота');}
+ save();setBg('gate');
+ h='<h2>'+(res==='win'?'Победа!':res==='loss'?'Поражение':'Ничья')+'</h2><p class="stat">'+(res==='win'?'Тень повержена.':res==='loss'?'Вы пали на песке Колизея. На Арене смерть не окончательна: герой цел.':'Время вышло, оба гладиатора на ногах.')+'</p>';
+ h+='<p>Рейтинг: '+old+' → <b style="color:'+(dr>=0?'#6fdc8c':'#ff9aa0')+'">'+a.r+'</b> ('+(dr>=0?'+':'')+dr+') · ранг <b>'+GLR[gi]+'</b>'+(gi!==gi0?(gi>gi0?' — повышение!':' — понижение'):'')+'</p>';
+ if(rw.length)h+='<p class="pts">'+rw.join('<br>')+'</p>';
+ h+='<button id="cagain">Ещё бой · взнос '+GLF[gi]+'</button><button id="ccity" class="sec2">В город</button>';
+ show(h);on('cagain',function(){if(C.gold<GLF[glr()]){this.textContent='Не хватает золота';return;}coloStart();});on('ccity',city);}
+function coloScreen(){setBg('gate');var gi=glr(),a=C.ar,fee=GLF[gi],h=head('Колизей');
+ h+='<p class="pts" style="color:#6fdc8c">Тестовый режим: Арена открыта всегда</p><p>Обычно Колизей открывается каждый час в :00 по Ташкенту на 10 минут. Бой 1 на 1 до 3 минут, соперник подбирается по рейтингу. Если оба живы — ничья.</p>';
+ h+='<div class="lst"><div class="row" style="border-left:3px solid #c8963e;padding-left:8px"><span><strong style="font-size:18px;color:#ffe2a8">Ранг '+GLR[gi]+'</strong> · рейтинг '+a.r+'<br><small>Побед '+a.w+' · поражений '+a.l+' · ничьих '+a.d+(gi<4?' · до ранга '+GLR[gi+1]+': '+(GLT[gi+1]-a.r):'')+'</small></span></div></div>';
+ h+=C.gold>=fee?'<button id="cgo">На Арену · взнос '+fee+' золота</button>':'<p class="pts">Взнос '+fee+' золота — не хватает золота</p>';
+ h+='<p style="font-size:12px;color:#8f99b3">Сейчас соперник — «тень»: гладиатор под управлением ИИ, его сила подобрана под ваш рейтинг. Живые соперники появятся, когда бой будет считать сервер.</p>';
+ h+='<p class="pts">Правила боя</p><div class="lst" style="text-align:left">'+[
+  'Удары сначала снимают ЦП, потом ХП. ЦП не восстанавливается до конца боя.',
+  'Работают все навыки, ауры, эссенции, древо и владение оружием. Фляг: 2 лечебных и 2 маны.',
+  'Четыре каменных столпа: снаряды и рывки сквозь них не проходят — за ними можно укрыться.',
+  'Камень возврата на Арене не действует. Смерть на Арене не окончательна: проигравший просто возвращается в город.',
+  'Победа даёт предмет по рангу, ничья возвращает половину взноса, поражение — взнос потерян. Золото победителю не платится.'].map(function(t){return '<div class="row"><span>'+t+'</span></div>';}).join('')+'</div>';
+ h+='<p class="pts">Ранги гладиаторов</p><div class="lst" style="text-align:left">';
+ for(var i=0;i<5;i++)h+='<div class="row" style="'+(i===gi?'background:rgba(138,106,58,.18)':'')+'"><span><strong style="color:#ffe2a8">'+GLR[i]+'</strong> · рейтинг '+(i<4?GLT[i]+'–'+(GLT[i+1]-1):GLT[i]+'+')+' · взнос '+GLF[i]+'<br><small>Награда: '+['грейд NG–D','грейд C','грейд B','грейд A','грейд S'][i]+', до лучшего'+(GLE[i]?', эпическое '+Math.round(GLE[i]*100)+'%':'')+' · эссенция 5% из монстров этажей '+['1–2','3–4','5–6','7–8','9–10 и стражей разлома со всех этажей'][i]+' · уникальное оружие 2%</small></span></div>';
+ h+='</div><p style="font-size:12px">Рейтинг стартует с 1000. Победа над равным даёт около +16, над сильным больше. Ниже начала своего ранга больше чем на 50 очков не опуститься. Раз в неделю лучшие 10 получат титул и сундук с уникальным предметом (с сервером).</p>';
+ show(h+back());on('bk',city);on('cgo',coloStart);}
+function start(){closedF=false;colo=null;qClr=0;downMsg=0;floor=1;timeLeft=GATE_TIME;elapsed=0;dark=0;stones=0;kills=0;shake=0;msg='';msgT=0;total=0;buildFloor(true);state='play';ui.className='hide';}
 function nextFloor(){sfx('portal');floor++;buildFloor(false);if(C.q&&!C.q.done&&C.q.t==='deep'&&floor>=C.q.f&&!C.q.c){C.q.c=1;say('Задание: этаж '+floor+' достигнут — теперь вернитесь живым');}save();}
 function bossAI(m,dt,d,ux,uy,sp){
  var ph=m.hp<m.mhp*0.5?2:1,q=ph===2?1.35:1;
@@ -858,7 +903,7 @@ function giveStone(x,y){
  if(!pool.length){for(var i=0;i<8;i++){var a=rnd(0,6.283),v=rnd(30,110);items.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0});}return;}
  var id=pool[ri(pool.length)];C.stones.push(id);say('Камень поддержки: '+ST[id].name);burst(x,y,'#ffc53d',14);save();
 }
-function kill(m){
+function kill(m){if(colo&&m.shadow){m.hp=0;burst(m.x,m.y,m.col,26);coloEnd('win');return;}
  var T0=TYPES[m.type],kd=m.boss?'boss'+floor:(m.elite?(floor===1?'elite':'elite'+floor):m.type),i;
  kills++;sfx('kill');wmGain(m);qKill(m);var dk=m.ai==='slime'?'goo':MV[m.type]&&(MV[m.type].k==='g'||MV[m.type].k==='bt'||MV[m.type].head==='skull')?'dust':TYPES[m.type].fireRes?'scorch':'blood';decal(m.x,m.y,m.r*(m.boss?1.6:1.1),dk==='goo'?m.col:dk==='dust'?'#8a8478':dk==='scorch'?'#120806':'#4a0a10',dk);burst(m.x,m.y,m.col,m.elite||m.boss?26:10);fx({k:'die',x:m.x,y:m.y,r:m.r,col:m.col,t:0.45,T:0.45});for(var dq3=0;dq3<12;dq3++)parts.push({x:m.x+rnd(-m.r,m.r),y:m.y+rnd(-m.r*0.6,m.r*0.6),vx:rnd(-15,15),vy:-rnd(30,80),col:m.col,t:rnd(0.4,0.8)});if(m.elite||m.boss||m.rb){hitStop=0.22;flashT=0.22;flashC='255,235,200';shake=Math.max(shake,8);fx({k:'ring',x:m.x,y:m.y,r:m.r,g:120,t:0.45,T:0.45,c:'255,197,61'});}C.kc[kd]=(C.kc[kd]||0)+1;
  var n=m.st[0]+ri(m.st[1]-m.st[0]+1);
@@ -1029,7 +1074,7 @@ function flask(){
  sfx('flask');hero.flask--;var tf=M(),h=Math.round(hero.mhp*0.45*(1+(tf.flaskHeal||0)/100)*(tf.kRage?0.5:1));hero.hp=Math.min(hero.mhp,hero.hp+h);float(hero.x,hero.y-22,'+'+h,'#6fdc8c',true);burst(hero.x,hero.y,'#6fdc8c',8);
 }
 
-function recall(){if(state!=='play'||C.rst<=0)return;hero.recall=hero.recall>0?0:5;}
+function recall(){if(colo){say('Камень возврата на Арене не действует');return;}if(state!=='play'||C.rst<=0)return;hero.recall=hero.recall>0?0:5;}
 function mflask(){
  if(hero.mflask<=0||hero.mp>=hero.mmp)return;
  sfx('flask');hero.mflask--;var h=Math.round(hero.mmp*(M().mflaskFull?1:0.5));hero.mp=Math.min(hero.mmp,hero.mp+h);float(hero.x,hero.y-22,'+'+h+' МП','#9cc0ff',true);burst(hero.x,hero.y,'#4c8dff',8);
@@ -1519,7 +1564,7 @@ function on(id,fn){var e=document.getElementById(id);if(e&&box.innerHTML.indexOf
 function head(t){return '<div class="tbk"><button id="bkt" class="sec2">‹ В город</button></div><h2>'+t+'</h2><p class="stat">Золото: '+C.gold+(C.debt?' · есть долг перед Казначейством':'')+'</p>';}
 function back(){return '<button id="bk" class="sec2">Назад в город</button>';}
 function cb(id,t,d,ic,col,cls){return '<button class="race cbx'+(cls?' '+cls:'')+'" id="'+id+'">'+(ic?'<span class="ic" style="border-color:'+col+'66;'+(cls&&cls.indexOf('gateb')>=0?'width:60px;height:60px;min-width:60px;border-radius:16px':'flex:none')+'">'+icoSvg(ic,col,cls&&cls.indexOf('gateb')>=0?44:24)+'</span>':'')+'<span><b'+(cls&&cls.indexOf('gateb')>=0?' style="font-size:20px;color:#c9b8ff"':'')+'>'+t+'</b>'+d+'</span></button>';}
-function finish(alive){setBg(alive?'gate':'death');
+function finish(alive){if(colo){coloEnd(alive?'draw':'loss');return;}setBg(alive?'gate':'death');
  state='over';joy=null;input.atk=false;sfx(alive?'win':'dead');
  var mm=Math.floor(elapsed/60),ss=Math.floor(elapsed%60),tm=mm+':'+(ss<10?'0':'')+ss,h,r0=rank();
  var i2;
@@ -1542,9 +1587,9 @@ function finish(alive){setBg(alive?'gate':'death');
 }
 function city(){setBg('city');if(C&&C.test)C.test=false;
  show('<h1>Оплот</h1><p>'+(gearIcon()?'<img src="'+gearIcon()+'" width="52" height="52" style="vertical-align:middle;margin-right:6px;border-radius:50%;background:#151a2a;border:1.5px solid '+(C.sp+C.pp+C.tp>0?'#ffc53d':'#2f3750')+'">':'')+RACES[C.race].name+' · уровень '+C.lvl+' · ранг Гильдии: '+RANKS[rank()-1]+'</p><p class="stat">Золото: '+C.gold+(C.debt?' · есть долг перед Казначейством':'')+'</p><div class="races">'+
-  cb('gate','Врата Лабиринта','Спуск в Лабиринт · десятина '+tax()+' золота','gate','#c9b8ff','gateb')+cb('hero','Герой','Характеристики, эссенции, камни, древо'+(C.sp+C.pp+C.tp>0?'<br><span style="color:#ffc53d">есть очки!</span>':''),'heroI','#e0c48a',C.sp+C.pp+C.tp>0?'glw':'')+cb('gear','Снаряжение','Надетые вещи и сумка: '+C.bag.length+' из 20','armor','#6aa5ff')+cb('stash','Сундук','Склад вещей: '+((C.stash||[]).length)+' из 40','chest','#d8a060')+cb('smith','Кузница','Покупка, улучшение, заказ','anvil','#ff8a3d')+cb('guild','Гильдия','Ранг и бестиарий','banner','#e5484d')+cb('friends','Друзья',ACC?'Ваш ник: '+ACC.nick:'Нужен аккаунт','friends','#6fdc8c')+cb('alch','Алхимик','Сосуды и камни возврата','flask','#6fdc8c')+cb('temple','Храм','Эссенции и пассивное древо','temple','#9b7bff')+cb('treas','Казначейство','Десятина и долги','coins','#ffc53d')+cb('saves','Настройки','Звук, новый герой','cog','#8f99b3')+
+  cb('gate','Врата Лабиринта','Спуск в Лабиринт · десятина '+tax()+' золота','gate','#c9b8ff','gateb')+cb('hero','Герой','Характеристики, эссенции, камни, древо'+(C.sp+C.pp+C.tp>0?'<br><span style="color:#ffc53d">есть очки!</span>':''),'heroI','#e0c48a',C.sp+C.pp+C.tp>0?'glw':'')+cb('gear','Снаряжение','Надетые вещи и сумка: '+C.bag.length+' из 20','armor','#6aa5ff')+cb('stash','Сундук','Склад вещей: '+((C.stash||[]).length)+' из 40','chest','#d8a060')+cb('smith','Кузница','Покупка, улучшение, заказ','anvil','#ff8a3d')+cb('guild','Гильдия','Ранг и бестиарий','banner','#e5484d')+cb('colo','Колизей','Арена · ранг '+GLR[glr()]+' · рейтинг '+C.ar.r+'<br><span style="color:#6fdc8c">открыт для теста</span>','sword','#e5484d')+cb('friends','Друзья',ACC?'Ваш ник: '+ACC.nick:'Нужен аккаунт','friends','#6fdc8c')+cb('alch','Алхимик','Сосуды и камни возврата','flask','#6fdc8c')+cb('temple','Храм','Эссенции и пассивное древо','temple','#9b7bff')+cb('treas','Казначейство','Десятина и долги','coins','#ffc53d')+cb('saves','Настройки','Звук, новый герой','cog','#8f99b3')+
   '</div>');
- on('gate',gate);on('hero',function(){sheet('camp');});on('gear',function(){gsel=null;gear('camp');});on('stash',function(){ssel=null;stashS();});on('smith',function(){smith();});on('guild',guild);on('friends',friends);on('alch',alch);on('temple',temple);on('treas',treas);on('saves',saves);
+ on('gate',gate);on('hero',function(){sheet('camp');});on('gear',function(){gsel=null;gear('camp');});on('stash',function(){ssel=null;stashS();});on('smith',function(){smith();});on('guild',guild);on('colo',coloScreen);on('friends',friends);on('alch',alch);on('temple',temple);on('treas',treas);on('saves',saves);
 }
 ICO.friends=['M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z','M2 20c.8-3.5 3.4-5.5 7-5.5s6.2 2 7 5.5M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .6 3.4 2.4 4 5.2'];
 function frSt(f){return f.st==='run'?'в Лабиринте, этаж '+f.f:f.st==='arena'?'на Арене':f.st==='city'?'в городе':'не в сети';}
@@ -1759,13 +1804,13 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.38 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.39 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
 function update(dt){
- readInput();elapsed+=dt;timeLeft-=dt;
- if(hero.slowT>0)hero.slowT-=dt;hero.cpS+=dt;if(hero.cpS>5)hero.cp=hero.mcp;hero.trapCd-=dt;if(hero.lvlG>0)hero.lvlG-=dt;
+ readInput();elapsed+=dt;timeLeft-=dt;if(colo&&timeLeft<=0){coloEnd('draw');return;}
+ if(hero.slowT>0)hero.slowT-=dt;hero.cpS+=dt;if(hero.cpS>5&&!colo)hero.cp=hero.mcp;hero.trapCd-=dt;if(hero.lvlG>0)hero.lvlG-=dt;
  if(hero.pois){hero.pois.t-=dt;hero.hp-=hero.pois.dps*dt;if(hero.pois.t<=0)hero.pois=null;if(hero.hp<=0){hero.hp=0;finish(false);return;}}
  var tv=map[Math.floor(hero.y/T)*MW+Math.floor(hero.x/T)];
  if(tv===3&&hero.trapCd<=0&&hero.dT<=0&&!hero.leap){hero.trapCd=1.5;burst(hero.x,hero.y,'#d8d1b4',8);hitHero(12*DS[floor-1],hero.x,hero.y);if(state!=='play')return;}
@@ -2402,12 +2447,12 @@ function hud(){
  if(pts){ctx.fillStyle='rgba(255,197,61,'+(0.65+0.35*pu)+')';ctx.fillText('есть очки — нажмите сюда',bx,lg>0?90:74);}
  var qq=C.q;if(qq){var qy=(lg>0?90:74)+(pts?16:0),qs=qq.done?'Задание выполнено ✓':qq.t==='kill'?TYPES[qq.m].name+': '+qq.c+'/'+qq.n:qq.t==='elite'?'Элитные (эт. '+qq.f+'+): '+qq.c+'/'+qq.n:qq.t==='total'?'Монстры (эт. '+qq.f+'+): '+qq.c+'/'+qq.n:qq.t==='boss'?'Страж разлома, этаж '+qq.f:qq.t==='clear'?'Зачистка этажа '+qq.f+': '+qq.c+'/'+qq.n:qq.t==='deep'?(qq.c?'Вернитесь живым':'Дойти до этажа '+qq.f):qq.t==='stones'?'Камни маны: '+stones+'/'+qq.n:'Владыка Бездны';ctx.fillStyle=qq.done?'#6fdc8c':'#e0c48a';ctx.fillText('◆ '+qs,12,qy);}
  ctx.textAlign='center';
- if(timeLeft>=0){var t=Math.ceil(timeLeft),mm=Math.floor(t/60),ss=t%60;ctx.fillStyle='#9aa4bd';ctx.fillText('Врата закроются через',VW/2,14);
+ if(timeLeft>=0){var t=Math.ceil(timeLeft),mm=Math.floor(t/60),ss=t%60;ctx.fillStyle='#9aa4bd';ctx.fillText(colo?'Бой закончится через':'Врата закроются через',VW/2,14);
   ctx.fillStyle=timeLeft<60?'#ff6b6b':'#f4f7ff';ctx.font='bold 20px system-ui,sans-serif';ctx.fillText(mm+':'+(ss<10?'0':'')+ss,VW/2,34);}
  else{ctx.fillStyle='#ff6b6b';ctx.font='bold 18px system-ui,sans-serif';ctx.fillText('Тьма ×'+dark,VW/2,22);ctx.font='11px system-ui,sans-serif';ctx.fillText('монстры сильнее на '+dark*20+'% · идите к Вратам этажа',VW/2,42);}
- ctx.textAlign='right';ctx.font='bold 12px system-ui,sans-serif';ctx.fillStyle='#f4f7ff';ctx.fillText('Этаж '+floor,VW-16,16);
- ctx.font='11px system-ui,sans-serif';ctx.fillStyle='#9aa4bd';ctx.fillText(FLOORS[floor-1].n,VW-16,31);
- ctx.fillStyle='#c9b8ff';ctx.fillText('Камни маны: '+stones,VW-16,47);ctx.fillStyle='#9aa4bd';ctx.fillText('Монстры: '+kills+' / '+total,VW-16,62);
+ ctx.textAlign='right';ctx.font='bold 12px system-ui,sans-serif';ctx.fillStyle='#f4f7ff';ctx.fillText(colo?'Колизей · ранг '+GLR[colo.gi]:'Этаж '+floor,VW-16,16);
+ ctx.font='11px system-ui,sans-serif';ctx.fillStyle='#9aa4bd';ctx.fillText(colo?'бой с тенью':FLOORS[floor-1].n,VW-16,31);
+ ctx.fillStyle='#c9b8ff';if(!colo)ctx.fillText('Камни маны: '+stones,VW-16,47);ctx.fillStyle='#9aa4bd';if(!colo)ctx.fillText('Монстры: '+kills+' / '+total,VW-16,62);
  ctx.textAlign='left';var stx=[];if(hero.pois)stx.push(hero.pois.k==='fire'?'ожог':hero.pois.k==='bleed'?'кровотечение':'яд');if(hero.buffT>0)stx.push('клич');if(hero.slowT>0)stx.push('замедление');if(floor===4)stx.push('холод');
  if(stx.length){ctx.fillStyle='#8fd14f';ctx.fillText(stx.join(' · '),16,98);}
  for(var bi=0;bi<mons.length;bi++){var bm=mons[bi];if(bm.boss&&bm.state!=='idle'){ctx.textAlign='center';if(bm.hpLag===undefined||bm.hpLag<bm.hp)bm.hpLag=bm.hp;else bm.hpLag+=(bm.hp-bm.hpLag)*0.05;bar2(VW/2-130,57,260,9,bm.hp/bm.mhp,bm.hpLag/bm.mhp,'#ffd970','#c0700f');ctx.fillStyle='#ffc53d';ctx.fillText(bm.label,VW/2,76);break;}}
