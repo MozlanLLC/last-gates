@@ -85,6 +85,8 @@ textarea{width:100%;box-sizing:border-box;height:72px;margin-top:8px;background:
 .lst .row{padding:6px 0;line-height:1.45}
 
 /* --- стиль подземелья --- */
+.tbk{position:sticky;top:-20px;z-index:7;display:flex;justify-content:flex-start;margin:-14px 0 2px;padding:8px 0;pointer-events:none}
+.tbk button{pointer-events:auto;margin:0;min-width:0;min-height:38px;padding:6px 14px;font-size:14px;border-radius:10px;background:linear-gradient(180deg,rgba(26,23,29,.95),rgba(16,14,18,.95))}
 body{background:#07060a}
 h1,h2{font-family:Georgia,'Times New Roman',serif;color:#e8d2a0;letter-spacing:1.5px;text-shadow:0 2px 0 #000,0 0 18px rgba(200,140,60,.25)}
 p{color:#b4ab9c}
@@ -1275,7 +1277,7 @@ function orderItem(list){var b=list[ri(list.length)],r=Math.random(),q=r<0.01?4:
 var smTab='buy';
 function smith(msgT,mIt){setBg('smith');
  var h=head('Кузница')+(msgT?'<div style="border:1px solid '+(mIt?QC[mIt.q]:'#3a4158')+';border-radius:14px;padding:8px 10px;margin:8px 0;background:rgba(18,15,12,0.92)"><p class="pts" style="margin:2px 0 6px">'+msgT+'</p>'+(mIt?'<div class="lst">'+itRow(mIt,'')+'</div>':'')+'</div>':'')+'',i,any=false,sells=C.bag.filter(function(q){return !q.st;}).length;
- h+='<div class="nav">'+[['buy','Покупка',C.shop.length],['sell','Продажа',C.bag.length],['up','Заточка',0],['ord','Заказ',0]].map(function(t){return '<button class="nv smt'+(smTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+(t[2]?' <span class="dot">'+t[2]+'</span>':'')+'</button>';}).join('')+'</div>';
+ h+='<div class="nav" style="top:34px">'+[['buy','Покупка',C.shop.length],['sell','Продажа',C.bag.length],['up','Заточка',0],['ord','Заказ',0]].map(function(t){return '<button class="nv smt'+(smTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+(t[2]?' <span class="dot">'+t[2]+'</span>':'')+'</button>';}).join('')+'</div>';
  var hB='<p class="pts">Товар кузнеца · обновляется после каждой экспедиции</p><div class="lst">';
  if(!C.shop.length)hB+='<p>Всё распродано.</p>';
  for(i=0;i<C.shop.length;i++)hB+=itRow(C.shop[i],'<button class="pb sb" data-i="'+i+'">Купить · '+price(C.shop[i])+'</button>');
@@ -1383,9 +1385,9 @@ var SCN={
   barrel(110,H-150,1.2);barrel(200,H-140,1);chest(300,H-150,1.3);chest(560,H-130,1.1);barrel(820,H-150,1.2);g.fillStyle='#4a3420';g.fillRect(700,H-230,110,110);g.strokeStyle='#2a1c10';g.lineWidth=4;g.strokeRect(700,H-230,110,110);g.beginPath();g.moveTo(700,H-230);g.lineTo(810,H-120);g.moveTo(810,H-230);g.lineTo(700,H-120);g.stroke();sFog(g,W,H,400,'30,20,10',0.5);}
 };
 
-function show(h){state='menu';box.innerHTML=h;ui.className='';ui.scrollTop=0;}
+function show(h){state='menu';box.innerHTML=h;ui.className='';ui.scrollTop=0;var bt=document.getElementById('bkt');if(bt&&bt.addEventListener)bt.addEventListener('click',function(){var b0=document.getElementById('bk');if(b0)b0.click();else city();});}
 function on(id,fn){var e=document.getElementById(id);if(e&&box.innerHTML.indexOf('id="'+id+'"')>=0)e.addEventListener('click',fn);}
-function head(t){return '<h2>'+t+'</h2><p class="stat">Золото: '+C.gold+(C.debt?' · есть долг перед Казначейством':'')+'</p>';}
+function head(t){return '<div class="tbk"><button id="bkt" class="sec2">‹ В город</button></div><h2>'+t+'</h2><p class="stat">Золото: '+C.gold+(C.debt?' · есть долг перед Казначейством':'')+'</p>';}
 function back(){return '<button id="bk" class="sec2">Назад в город</button>';}
 function cb(id,t,d,ic,col,cls){return '<button class="race cbx'+(cls?' '+cls:'')+'" id="'+id+'">'+(ic?'<span class="ic" style="border-color:'+col+'66;'+(cls&&cls.indexOf('gateb')>=0?'width:60px;height:60px;min-width:60px;border-radius:16px':'flex:none')+'">'+icoSvg(ic,col,cls&&cls.indexOf('gateb')>=0?44:24)+'</span>':'')+'<span><b'+(cls&&cls.indexOf('gateb')>=0?' style="font-size:20px;color:#c9b8ff"':'')+'>'+t+'</b>'+d+'</span></button>';}
 function finish(alive){setBg(alive?'gate':'death');
@@ -1578,7 +1580,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.31 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.32 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
