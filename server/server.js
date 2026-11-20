@@ -67,7 +67,11 @@ R['POST /api/register'] = (q, b) => {
   const nick = String(b.nick || '').trim(), pass = String(b.pass || '');
   if (!/^[A-Za-zА-Яа-яЁё0-9_]{3,16}$/.test(nick)) return [400, 'Ник: 3–16 букв, цифр или _'];
   if (pass.length < 6 || pass.length > 64) return [400, 'Пароль: от 6 до 64 символов'];
-  if (db.prepare('SELECT 1 FROM users WHERE nkey=?').get(nick.toLowerCase())) return [409, 'Такой ник уже занят'];
+  if (db.prepare('SELECT 1 FROM users WHERE nkey=?').get(nick.toLowerCase())) {
+    let alt = null;
+    for (let i = 1; i < 1000 && !alt; i++) { const v = (nick.slice(0, 16 - String(i).length) + i); if (!db.prepare('SELECT 1 FROM users WHERE nkey=?').get(v.toLowerCase())) alt = v; }
+    return [409, 'Ник «' + nick + '» уже занят', { suggest: alt }];
+  }
   const salt = crypto.randomBytes(16).toString('hex'), tag = String(1000 + crypto.randomInt(9000));
   const r = db.prepare('INSERT INTO users(nick,nkey,tag,salt,hash,created) VALUES(?,?,?,?,?,?)').run(nick, nick.toLowerCase(), tag, salt, scryptHash(pass, salt), now());
   return session(Number(r.lastInsertRowid), nick, tag);
@@ -117,23 +121,23 @@ R['GET /api/friends'] = (q) => {
   const rows = friendRows(q.uid);
   const inc = db.prepare('SELECT u.id, u.nick, u.tag FROM friends f JOIN users u ON u.id=f.a WHERE f.b=? AND f.state=\'pending\'').all(q.uid);
   return {
-    code: q.user.nick + '#' + q.user.tag,
+    code: q.user.nick,
     friends: rows.filter(r => r.state === 'ok').map(pubUser).sort((x, y) => (y.online - x.online) || x.nick.localeCompare(y.nick)),
     outgoing: rows.filter(r => r.state === 'pending').map(r => ({ id: r.id, nick: r.nick, tag: r.tag })),
     incoming: inc
   };
 };
 R['POST /api/friends/add'] = (q, b) => {
-  const m = /^(.{3,16})#(\d{4})$/.exec(String(b.code || '').trim());
-  if (!m) return [400, 'Код друга выглядит так: Ник#1234'];
-  const u = db.prepare('SELECT id,nick,tag FROM users WHERE nkey=? AND tag=?').get(m[1].toLowerCase(), m[2]);
-  if (!u) return [404, 'Игрок с таким кодом не найден'];
-  if (u.id === q.uid) return [400, 'Это ваш собственный код'];
+  const nk = String(b.code || b.nick || '').trim().replace(/#\d*$/, '').toLowerCase();
+  if (nk.length < 3) return [400, 'Введите ник друга'];
+  const u = db.prepare('SELECT id,nick,tag FROM users WHERE nkey=?').get(nk);
+  if (!u) return [404, 'Игрок с таким ником не найден'];
+  if (u.id === q.uid) return [400, 'Это ваш собственный ник'];
   if (db.prepare('SELECT COUNT(*) AS n FROM friends WHERE a=? AND state=\'ok\'').get(q.uid).n >= MAX_FRIENDS) return [400, 'В списке уже ' + MAX_FRIENDS + ' друзей'];
   const back = db.prepare('SELECT state FROM friends WHERE a=? AND b=?').get(u.id, q.uid);
   if (back && back.state === 'pending') { addFriendship(q.uid, u.id); return { ok: true, msg: u.nick + ' теперь в друзьях' }; }
   if (back && back.state === 'ok') return { ok: true, msg: u.nick + ' уже в друзьях' };
-  if (back && back.state === 'block') return [404, 'Игрок с таким кодом не найден'];
+  if (back && back.state === 'block') return [404, 'Игрок с таким ником не найден'];
   db.prepare('INSERT OR IGNORE INTO friends(a,b,state,since) VALUES(?,?,\'pending\',?)').run(q.uid, u.id, now());
   return { ok: true, msg: 'Заявка отправлена: ' + u.nick };
 };
@@ -182,7 +186,7 @@ const server = http.createServer((req, res) => {
     }
     try {
       const r = fn(q, b);
-      if (Array.isArray(r)) send(res, r[0], { error: r[1] }); else send(res, 200, r);
+      if (Array.isArray(r)) send(res, r[0], Object.assign({ error: r[1] }, r[2] || {})); else send(res, 200, r);
     } catch (e) { console.error(key, e); send(res, 500, { error: 'Ошибка сервера' }); }
   });
 });
