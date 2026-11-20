@@ -201,6 +201,7 @@ const aq = [];             // очередь Арены: {uid, r, t}
 const duels = new Map();   // id -> {id, a, b, host}
 const userDuel = new Map();
 let duelSeq = 1;
+const graces = new Map(); // uid -> таймер: держим место в группе/дуэли при кратком обрыве
 let pidSeq = 1;
 
 function wsSend(c, obj) {
@@ -317,6 +318,7 @@ server.on('upgrade', (req, sock) => {
   sock.setNoDelay(true);
   const c = { uid: s.uid, nick: s.nick, sock, buf: Buffer.alloc(0), dead: false, seen: now() };
   const old = conns.get(c.uid); if (old) { old.dead = true; try { old.sock.destroy(); } catch (e) {} }
+  if (graces.has(c.uid)) { clearTimeout(graces.get(c.uid)); graces.delete(c.uid); }
   conns.set(c.uid, c);
   presence.set(c.uid, Object.assign(presence.get(c.uid) || { st: 'city', f: 0 }, { t: now() }));
   wsSend(c, { t: 'hello', uid: c.uid, nick: c.nick });
@@ -342,11 +344,20 @@ server.on('upgrade', (req, sock) => {
   });
   const bye = () => {
     if (c.dead) return; c.dead = true; if (conns.get(c.uid) === c) conns.delete(c.uid);
-    const qi = aq.findIndex(x => x.uid === c.uid); if (qi >= 0) aq.splice(qi, 1);
-    const did = userDuel.get(c.uid), dd = did && duels.get(did);
-    if (dd) { const other = dd.a === c.uid ? dd.b : dd.a; toUid(other, { t: 'dgone' }); duels.delete(did); userDuel.delete(dd.a); userDuel.delete(dd.b); }
-    const pid2 = userParty.get(c.uid), p = pid2 && parties.get(pid2);
-    if (p) { if (p.state === 'run') leaveParty(c.uid); else partyPush(p); }
+    const uid = c.uid;
+    const qi = aq.findIndex(x => x.uid === uid); if (qi >= 0) aq.splice(qi, 1);
+    const pid2 = userParty.get(uid), p = pid2 && parties.get(pid2);
+    if (p && p.state !== 'run') partyPush(p);
+    if (userDuel.get(uid) || (p && p.state === 'run')) {
+      if (graces.has(uid)) clearTimeout(graces.get(uid));
+      graces.set(uid, setTimeout(() => {
+        graces.delete(uid); if (conns.has(uid)) return;
+        const did = userDuel.get(uid), dd = did && duels.get(did);
+        if (dd) { const other = dd.a === uid ? dd.b : dd.a; toUid(other, { t: 'dgone' }); duels.delete(did); userDuel.delete(dd.a); userDuel.delete(dd.b); }
+        const pid3 = userParty.get(uid), p3 = pid3 && parties.get(pid3);
+        if (p3) { if (p3.state === 'run') leaveParty(uid); else partyPush(p3); }
+      }, 20000));
+    }
   };
   sock.on('close', bye); sock.on('error', bye);
 });
