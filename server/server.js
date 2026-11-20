@@ -196,6 +196,11 @@ const conns = new Map();   // uid -> conn
 const parties = new Map(); // pid -> {id, leader, members:[uid], ready:{}, state, host}
 const userParty = new Map();
 const invites = new Map(); // uid -> Map(pid -> t)
+const looks = new Map();   // uid -> внешний вид героя для портретов
+const aq = [];             // очередь Арены: {uid, r, t}
+const duels = new Map();   // id -> {id, a, b, host}
+const userDuel = new Map();
+let duelSeq = 1;
 let pidSeq = 1;
 
 function wsSend(c, obj) {
@@ -212,7 +217,8 @@ function nickOf(uid) { const u = db.prepare('SELECT nick FROM users WHERE id=?')
 function partyView(p) {
   return { id: p.id, leader: p.leader, state: p.state, host: p.host || 0, members: p.members.map(uid => {
     const c = db.prepare('SELECT race,lvl FROM chars WHERE uid=?').get(uid) || {};
-    return { uid, nick: nickOf(uid), race: c.race || null, lvl: c.lvl || 0, ready: !!p.ready[uid], online: conns.has(uid) };
+    const pr = online(uid);
+    return { uid, nick: nickOf(uid), race: c.race || null, lvl: c.lvl || 0, ready: !!p.ready[uid], online: conns.has(uid), look: looks.get(uid) || null, st: pr ? pr.st : 'off', f: pr ? pr.f : 0 };
   }) };
 }
 function partyPush(p) { const v = partyView(p); p.members.forEach(uid => toUid(uid, { t: 'party', p: v })); }
@@ -233,7 +239,23 @@ function onMsg(c, m) {
   presence.set(uid, Object.assign(presence.get(uid) || { st: 'city', f: 0 }, { t: now() }));
   switch (m.t) {
     case 'ping': return wsSend(c, { t: 'pong' });
-    case 'st': presence.set(uid, { st: m.st === 'run' ? 'run' : m.st === 'arena' ? 'arena' : 'city', f: Math.max(0, Math.min(10, m.f | 0)), t: now() }); return;
+    case 'st': { const o = presence.get(uid) || {}, ns = m.st === 'run' ? 'run' : m.st === 'arena' ? 'arena' : 'city', nf = Math.max(0, Math.min(10, m.f | 0));
+      presence.set(uid, { st: ns, f: nf, t: now() }); if (p && (o.st !== ns || o.f !== nf)) partyPush(p); return; }
+    case 'look': { const j = JSON.stringify(m.o || null); if (j.length < 3000) { looks.set(uid, m.o); if (p) partyPush(p); } return; }
+    case 'aq': {
+      if (userDuel.get(uid)) return;
+      const i0 = aq.findIndex(x => x.uid === uid); if (i0 >= 0) aq.splice(i0, 1);
+      const r = Math.max(0, Math.min(5000, m.r | 0));
+      let best = -1, bd = 1e9; aq.forEach((x, i) => { if (!conns.has(x.uid)) return; const d = Math.abs(x.r - r); if (d < bd) { bd = d; best = i; } });
+      if (best < 0) { aq.push({ uid, r, t: now() }); return wsSend(c, { t: 'aqw' }); }
+      const o = aq.splice(best, 1)[0], d = { id: duelSeq++, a: o.uid, b: uid, host: o.uid };
+      duels.set(d.id, d); userDuel.set(d.a, d.id); userDuel.set(d.b, d.id);
+      const mem = [{ uid: d.a, nick: nickOf(d.a), r: o.r }, { uid: d.b, nick: nickOf(d.b), r }];
+      [d.a, d.b].forEach(x => { toUid(x, { t: 'duel', id: d.id, host: d.host, members: mem }); presence.set(x, { st: 'arena', f: 0, t: now() }); });
+      return;
+    }
+    case 'aleave': { const i1 = aq.findIndex(x => x.uid === uid); if (i1 >= 0) aq.splice(i1, 1); return; }
+    case 'dend': { const did = userDuel.get(uid), d = did && duels.get(did); if (d) { duels.delete(did); userDuel.delete(d.a); userDuel.delete(d.b); } return; }
     case 'inv': {
       const u = db.prepare('SELECT id,nick FROM users WHERE nkey=?').get(String(m.nick || '').toLowerCase());
       if (!u || !areFriends(uid, u.id)) return wsSend(c, { t: 'err', msg: 'Пригласить можно только друга' });
@@ -267,10 +289,12 @@ function onMsg(c, m) {
       if (notReady.length) return wsSend(c, { t: 'err', msg: 'Не все готовы: ' + notReady.map(nickOf).join(', ') });
       p.state = 'run'; p.host = uid;
       const mem = p.members.map(x => ({ uid: x, nick: nickOf(x) }));
-      p.members.forEach(x => toUid(x, { t: 'start', host: uid, members: mem, seed: crypto.randomInt(1e9) }));
+      p.members.forEach(x => toUid(x, { t: 'start', host: uid, members: mem }));
       partyPush(p); return;
     }
     case 'rel': {
+      const did = userDuel.get(uid), dd = did && duels.get(did);
+      if (dd) { const other = dd.a === uid ? dd.b : dd.a; toUid(other, { t: 'rel', from: uid, d: m.d }); return; }
       if (!p || p.state !== 'run') return;
       if (uid === p.host) { if (m.to) { if (p.members.includes(m.to | 0)) toUid(m.to | 0, { t: 'rel', from: uid, d: m.d }); } else p.members.forEach(x => { if (x !== uid) toUid(x, { t: 'rel', from: uid, d: m.d }); }); }
       else toUid(p.host, { t: 'rel', from: uid, d: m.d });
@@ -318,6 +342,9 @@ server.on('upgrade', (req, sock) => {
   });
   const bye = () => {
     if (c.dead) return; c.dead = true; if (conns.get(c.uid) === c) conns.delete(c.uid);
+    const qi = aq.findIndex(x => x.uid === c.uid); if (qi >= 0) aq.splice(qi, 1);
+    const did = userDuel.get(c.uid), dd = did && duels.get(did);
+    if (dd) { const other = dd.a === c.uid ? dd.b : dd.a; toUid(other, { t: 'dgone' }); duels.delete(did); userDuel.delete(dd.a); userDuel.delete(dd.b); }
     const pid2 = userParty.get(c.uid), p = pid2 && parties.get(pid2);
     if (p) { if (p.state === 'run') leaveParty(c.uid); else partyPush(p); }
   };
