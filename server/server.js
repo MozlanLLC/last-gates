@@ -190,4 +190,139 @@ const server = http.createServer((req, res) => {
     } catch (e) { console.error(key, e); send(res, 500, { error: 'Ошибка сервера' }); }
   });
 });
+
+// ================= WebSocket (RFC 6455, без зависимостей) + группы
+const conns = new Map();   // uid -> conn
+const parties = new Map(); // pid -> {id, leader, members:[uid], ready:{}, state, host}
+const userParty = new Map();
+const invites = new Map(); // uid -> Map(pid -> t)
+let pidSeq = 1;
+
+function wsSend(c, obj) {
+  if (!c || c.dead) return;
+  const data = Buffer.from(JSON.stringify(obj));
+  let head;
+  if (data.length < 126) head = Buffer.from([0x81, data.length]);
+  else if (data.length < 65536) { head = Buffer.alloc(4); head[0] = 0x81; head[1] = 126; head.writeUInt16BE(data.length, 2); }
+  else { head = Buffer.alloc(10); head[0] = 0x81; head[1] = 127; head.writeBigUInt64BE(BigInt(data.length), 2); }
+  try { c.sock.write(Buffer.concat([head, data])); } catch (e) {}
+}
+function toUid(uid, obj) { wsSend(conns.get(uid), obj); }
+function nickOf(uid) { const u = db.prepare('SELECT nick FROM users WHERE id=?').get(uid); return u ? u.nick : '?'; }
+function partyView(p) {
+  return { id: p.id, leader: p.leader, state: p.state, host: p.host || 0, members: p.members.map(uid => {
+    const c = db.prepare('SELECT race,lvl FROM chars WHERE uid=?').get(uid) || {};
+    return { uid, nick: nickOf(uid), race: c.race || null, lvl: c.lvl || 0, ready: !!p.ready[uid], online: conns.has(uid) };
+  }) };
+}
+function partyPush(p) { const v = partyView(p); p.members.forEach(uid => toUid(uid, { t: 'party', p: v })); }
+function leaveParty(uid, why) {
+  const pid = userParty.get(uid); if (!pid) return; const p = parties.get(pid); userParty.delete(uid); if (!p) return;
+  p.members = p.members.filter(x => x !== uid); delete p.ready[uid];
+  toUid(uid, { t: 'party', p: null });
+  if (p.state === 'run') { if (p.host === uid) p.members.forEach(m => toUid(m, { t: 'hostgone' })); else toUid(p.host, { t: 'left', uid }); }
+  if (p.members.length < 2 && p.state !== 'run') { p.members.forEach(m => { userParty.delete(m); toUid(m, { t: 'party', p: null }); }); parties.delete(pid); return; }
+  if (!p.members.length) { parties.delete(pid); return; }
+  if (p.leader === uid) p.leader = p.members[0];
+  partyPush(p);
+}
+function areFriends(a, b) { return !!db.prepare("SELECT 1 FROM friends WHERE a=? AND b=? AND state='ok'").get(a, b); }
+
+function onMsg(c, m) {
+  const uid = c.uid, pid = userParty.get(uid), p = pid && parties.get(pid);
+  presence.set(uid, Object.assign(presence.get(uid) || { st: 'city', f: 0 }, { t: now() }));
+  switch (m.t) {
+    case 'ping': return wsSend(c, { t: 'pong' });
+    case 'st': presence.set(uid, { st: m.st === 'run' ? 'run' : m.st === 'arena' ? 'arena' : 'city', f: Math.max(0, Math.min(10, m.f | 0)), t: now() }); return;
+    case 'inv': {
+      const u = db.prepare('SELECT id,nick FROM users WHERE nkey=?').get(String(m.nick || '').toLowerCase());
+      if (!u || !areFriends(uid, u.id)) return wsSend(c, { t: 'err', msg: 'Пригласить можно только друга' });
+      if (!conns.has(u.id)) return wsSend(c, { t: 'err', msg: u.nick + ' не в сети' });
+      if (userParty.get(u.id) && userParty.get(u.id) === pid) return wsSend(c, { t: 'err', msg: u.nick + ' уже в группе' });
+      if (userParty.get(u.id)) return wsSend(c, { t: 'err', msg: u.nick + ' уже в другой группе' });
+      let q = p;
+      if (!q) { q = { id: pidSeq++, leader: uid, members: [uid], ready: {}, state: 'lobby', host: 0 }; parties.set(q.id, q); userParty.set(uid, q.id); }
+      if (q.leader !== uid) return wsSend(c, { t: 'err', msg: 'Приглашать может только ведущий' });
+      if (q.state !== 'lobby') return wsSend(c, { t: 'err', msg: 'Группа уже в Лабиринте' });
+      if (q.members.length >= 3) return wsSend(c, { t: 'err', msg: 'В группе уже 3 героя' });
+      if (!invites.has(u.id)) invites.set(u.id, new Map()); invites.get(u.id).set(q.id, now());
+      toUid(u.id, { t: 'invite', pid: q.id, from: c.nick });
+      partyPush(q); return wsSend(c, { t: 'msg', msg: 'Приглашение отправлено: ' + u.nick });
+    }
+    case 'acc': {
+      const iv = invites.get(uid), q = parties.get(m.pid | 0);
+      if (!iv || !iv.has(m.pid | 0) || !q || now() - iv.get(m.pid | 0) > 120e3) return wsSend(c, { t: 'err', msg: 'Приглашение устарело' });
+      iv.delete(m.pid | 0);
+      if (q.state !== 'lobby' || q.members.length >= 3) return wsSend(c, { t: 'err', msg: 'В группу уже не войти' });
+      if (pid) leaveParty(uid);
+      q.members.push(uid); userParty.set(uid, q.id); partyPush(q); return;
+    }
+    case 'dec': { const iv = invites.get(uid); if (iv) iv.delete(m.pid | 0); const q = parties.get(m.pid | 0); if (q) toUid(q.leader, { t: 'msg', msg: c.nick + ' отклонил приглашение' }); return; }
+    case 'leave': return leaveParty(uid);
+    case 'kick': if (p && p.leader === uid && m.uid !== uid && p.members.includes(m.uid | 0) && p.state === 'lobby') { toUid(m.uid | 0, { t: 'msg', msg: 'Ведущий исключил вас из группы' }); leaveParty(m.uid | 0); } return;
+    case 'ready': if (p && p.state === 'lobby') { p.ready[uid] = !!m.v; partyPush(p); } return;
+    case 'start': {
+      if (!p || p.leader !== uid || p.state !== 'lobby') return;
+      const notReady = p.members.filter(x => x !== uid && (!p.ready[x] || !conns.has(x)));
+      if (notReady.length) return wsSend(c, { t: 'err', msg: 'Не все готовы: ' + notReady.map(nickOf).join(', ') });
+      p.state = 'run'; p.host = uid;
+      const mem = p.members.map(x => ({ uid: x, nick: nickOf(x) }));
+      p.members.forEach(x => toUid(x, { t: 'start', host: uid, members: mem, seed: crypto.randomInt(1e9) }));
+      partyPush(p); return;
+    }
+    case 'rel': {
+      if (!p || p.state !== 'run') return;
+      if (uid === p.host) { if (m.to) { if (p.members.includes(m.to | 0)) toUid(m.to | 0, { t: 'rel', from: uid, d: m.d }); } else p.members.forEach(x => { if (x !== uid) toUid(x, { t: 'rel', from: uid, d: m.d }); }); }
+      else toUid(p.host, { t: 'rel', from: uid, d: m.d });
+      return;
+    }
+    case 'end': if (p && p.host === uid && p.state === 'run') { p.state = 'lobby'; p.host = 0; p.ready = {}; p.members.forEach(x => { if (x !== uid) toUid(x, { t: 'rel', from: uid, d: m.d || { t: 'end' } }); }); partyPush(p); } return;
+  }
+}
+
+server.on('upgrade', (req, sock) => {
+  const u = new URL(req.url, 'http://x');
+  const fail = () => { try { sock.end('HTTP/1.1 401 Unauthorized\r\n\r\n'); } catch (e) {} };
+  if (u.pathname !== '/ws') return fail();
+  const tok = u.searchParams.get('token') || '';
+  const s = tok && db.prepare('SELECT s.uid, s.exp, u.nick FROM sessions s JOIN users u ON u.id=s.uid WHERE s.token=?').get(tok);
+  if (!s || s.exp < now()) return fail();
+  const key = req.headers['sec-websocket-key']; if (!key) return fail();
+  const acc = crypto.createHash('sha1').update(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
+  sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ' + acc + '\r\n\r\n');
+  sock.setNoDelay(true);
+  const c = { uid: s.uid, nick: s.nick, sock, buf: Buffer.alloc(0), dead: false, seen: now() };
+  const old = conns.get(c.uid); if (old) { old.dead = true; try { old.sock.destroy(); } catch (e) {} }
+  conns.set(c.uid, c);
+  presence.set(c.uid, Object.assign(presence.get(c.uid) || { st: 'city', f: 0 }, { t: now() }));
+  wsSend(c, { t: 'hello', uid: c.uid, nick: c.nick });
+  const pid = userParty.get(c.uid); if (pid && parties.get(pid)) partyPush(parties.get(pid)); else wsSend(c, { t: 'party', p: null });
+  const iv = invites.get(c.uid); if (iv) for (const [ip, t] of iv) if (now() - t < 120e3 && parties.get(ip)) wsSend(c, { t: 'invite', pid: ip, from: nickOf(parties.get(ip).leader) });
+  sock.on('data', d => {
+    c.seen = now(); c.buf = Buffer.concat([c.buf, d]);
+    if (c.buf.length > 600e3) return sock.destroy();
+    for (;;) {
+      const b = c.buf; if (b.length < 2) break;
+      const op = b[0] & 15, masked = b[1] & 128; let len = b[1] & 127, off = 2;
+      if (len === 126) { if (b.length < 4) break; len = b.readUInt16BE(2); off = 4; }
+      else if (len === 127) { if (b.length < 10) break; len = Number(b.readBigUInt64BE(2)); off = 10; }
+      if (len > 512e3) return sock.destroy();
+      const need = off + (masked ? 4 : 0) + len; if (b.length < need) break;
+      let pl = b.subarray(off + (masked ? 4 : 0), need);
+      if (masked) { const mk = b.subarray(off, off + 4); pl = Buffer.from(pl); for (let i = 0; i < pl.length; i++) pl[i] ^= mk[i & 3]; }
+      c.buf = b.subarray(need);
+      if (op === 8) { sock.end(); return; }
+      if (op === 9) { try { sock.write(Buffer.concat([Buffer.from([0x8a, pl.length]), pl])); } catch (e) {} continue; }
+      if (op === 1) { let m; try { m = JSON.parse(pl.toString('utf8')); } catch (e) { continue; } try { onMsg(c, m); } catch (e) { console.error('ws', e); } }
+    }
+  });
+  const bye = () => {
+    if (c.dead) return; c.dead = true; if (conns.get(c.uid) === c) conns.delete(c.uid);
+    const pid2 = userParty.get(c.uid), p = pid2 && parties.get(pid2);
+    if (p) { if (p.state === 'run') leaveParty(c.uid); else partyPush(p); }
+  };
+  sock.on('close', bye); sock.on('error', bye);
+});
+setInterval(() => { const t = now(); for (const c of conns.values()) { if (t - c.seen > 70e3) { try { c.sock.destroy(); } catch (e) {} } else wsSend(c, { t: 'ka' }); } }, 25e3).unref();
+
 server.listen(PORT, HOST, () => console.log('Последние Врата: сервер на ' + HOST + ':' + PORT + ', данные в ' + DATA));
