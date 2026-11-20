@@ -83,6 +83,39 @@ textarea{width:100%;box-sizing:border-box;height:72px;margin-top:8px;background:
 .up{color:#6fdc8c}.dn{color:#ff6b6b}
 .det button{margin:6px 10px 0 0;min-width:120px}
 .lst .row{padding:6px 0;line-height:1.45}
+
+/* --- стиль подземелья --- */
+body{background:#07060a}
+h1,h2{font-family:Georgia,'Times New Roman',serif;color:#e8d2a0;letter-spacing:1.5px;text-shadow:0 2px 0 #000,0 0 18px rgba(200,140,60,.25)}
+p{color:#b4ab9c}
+.stat{color:#efe4cc}
+.pts{color:#d9a94e}
+button{color:#f0dcb0;background:linear-gradient(180deg,#4a3420,#2c1e12);border:1.5px solid #8a6a3a;box-shadow:inset 0 1px 0 rgba(255,220,160,.18),0 2px 6px rgba(0,0,0,.5);text-shadow:0 1px 0 #000;font-weight:700}
+button:active{background:linear-gradient(180deg,#3a2818,#22160c)}
+.pb{color:#f0dcb0}
+.sec2{background:linear-gradient(180deg,#1a181d,#121015);color:#a8a091;border:1.5px solid #3e3830;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.sec2:active{background:#0e0c10}
+.race{background:linear-gradient(180deg,rgba(26,23,28,.92),rgba(15,13,17,.92));color:#b4ab9c;border:1.5px solid #3e3628;box-shadow:inset 0 1px 0 rgba(255,220,160,.05),0 3px 10px rgba(0,0,0,.45);text-shadow:none}
+.race:active{background:#1d1a1f}
+.race b{color:#e0c48a}
+.row{border-bottom:1px solid #2a241c}
+.row span{color:#b4ab9c}
+.row b,.row strong{color:#efe4cc}
+.ic,.row span.ic{background:radial-gradient(circle at 50% 40%,#2a231a,#0d0b09);border:1px solid #4a3e2c}
+.cell{background:linear-gradient(180deg,#17151a,#100e12);border-color:#3e3628;color:#d2c8b4;text-shadow:none;box-shadow:inset 0 1px 0 rgba(255,220,160,.04)}
+.cell:active{background:#1d1a1f}
+.cell.emp{color:#5a5246;border-color:#3a3228}
+.cell.sel{box-shadow:0 0 0 2px #e0c48a}
+.nav{background:linear-gradient(180deg,#0b0a0d,#0b0a0d 85%,rgba(11,10,13,0));border-bottom:1px solid #2a241c}
+.nav button{background:linear-gradient(180deg,#1a171c,#121014);color:#c8bda8;border:1.5px solid #3e3628;box-shadow:none;text-shadow:none}
+.nav button.on{background:linear-gradient(180deg,#5a4024,#3a2814);color:#ffe2a8;border-color:#c8963e}
+.nav button.nx{background:linear-gradient(180deg,#2a2016,#1a130c);color:#f0dcb0;border-color:#8a6a3a}
+.nav .dot{background:#d9a94e;color:#1a1208}
+.popc{background:linear-gradient(180deg,#17141a,#0f0d11);border-color:#4a3e2c;box-shadow:0 10px 40px rgba(0,0,0,.7)}
+.gateb{background:radial-gradient(circle at 12% 50%,#2a1f4a,#120f1a 60%)}
+textarea{background:#121015;border-color:#3e3628;color:#e8dcc4}
+#tbar{background:linear-gradient(0deg,#0b0a0d,rgba(11,10,13,.96))!important;border-top:1px solid #2a241c!important}
+.tnb{background:linear-gradient(180deg,#5a4024,#3a2814)}
 </style>
 </head>
 <body>
@@ -950,6 +983,7 @@ function minimap(){var R=mmRect(),sc=R.s,x0=R.x,y0=R.y,i,j,idx,k;
  if(R.big){ctx.textAlign='center';ctx.font='11px system-ui,sans-serif';ctx.fillStyle='#9aa4bd';ctx.fillText('Карта этажа · показано то, где вы уже были · нажмите, чтобы закрыть',VW/2,y0+R.h+18);}}
 function guardUI(){if(!ui||!ui.style)return;ui.style.pointerEvents='none';setTimeout(function(){ui.style.pointerEvents='';},380);}
 function nearEss(){if(!hero)return null;for(var i=0;i<orbs.length;i++)if(orbs[i].dec&&dist(orbs[i],hero)<60)return orbs[i];return null;}
+var CTRL='#c8a060';
 function btns(){
  var fy=VH-(VW<640?120:34),a=[{id:'atk',x:VW-78,y:VH-78,r:42},{id:'dodge',x:VW-236,y:VH-48,r:28},{id:'flask',x:VW/2-28,y:fy,r:22},{id:'mflask',x:VW/2+28,y:fy,r:22}];
  var pos=[[-174,-78],[-146,-146],[-78,-174],[-30,-158]],ac=C?actives():[];
@@ -1236,21 +1270,28 @@ var ORDP=15000,ORDL=[['Меч',['sword'],'sword'],['Топор',['axe'],'axe'],[
  ['Щит',['shield'],'shield'],['Сигиль',['sigil'],'sigil'],['Колчан',['quiver'],'quiver'],['Броня',['armor'],'armor'],['Шлем',['helm'],'helm'],['Перчатки',['gloves'],'gloves'],['Сапоги',['boots'],'boots'],['Кольцо',['rgold','rcoin','riron','rlaz'],'ring'],['Амулет',['aamb','ajade','alap','ablood','astar'],'amulet']];
 function orderItem(list){var b=list[ri(list.length)],r=Math.random(),q=r<0.01?4:r<0.06?3:r<0.26?2:1,r2=Math.random(),g=r2<0.05?5:r2<0.15?4:r2<0.35?3:r2<0.6?2:1;
  if(q===4){var u=null,uc2=[];for(var k in UNI)if(UNI[k].b===b)uc2.push(k);u=uc2.length?uc2[ri(uc2.length)]:null;if(u){var it=genItem(g,3,b);it.q=4;it.u=u;return it;}q=3;}return genItem(g,q,b);}
+var smTab='buy';
 function smith(msgT,mIt){setBg('smith');
- var h=head('Кузница')+(msgT?'<div style="border:1px solid '+(mIt?QC[mIt.q]:'#3a4158')+';border-radius:14px;padding:8px 10px;margin:8px 0;background:#10141f"><p class="pts" style="margin:2px 0 6px">'+msgT+'</p>'+(mIt?'<div class="lst">'+itRow(mIt,'')+'</div>':'')+'</div>':'')+'<p class="pts">Товар кузнеца · обновляется после каждой экспедиции</p><div class="lst">',i,any=false;
- if(!C.shop.length)h+='<p>Всё распродано.</p>';
- for(i=0;i<C.shop.length;i++)h+=itRow(C.shop[i],'<button class="pb sb" data-i="'+i+'">Купить · '+price(C.shop[i])+'</button>');
- h+='</div><p class="pts">Заказ у мастера · '+ORDP+' золота</p><p>Мастер куёт случайную вещь выбранного вида, не хуже хорошего качества. Качество: уникальное 1%, эпическое 5%, лучшее 20%, хорошее — остальное. Грейд: S 5%, A 10%, B 20%, C 25%, D — остальное.</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">';
- for(var oi=0;oi<ORDL.length;oi++)h+='<button class="pb ord" data-o="'+oi+'" style="display:inline-flex;align-items:center;gap:4px">'+icoSvg(ORDL[oi][2],'#0b0d15',18)+ORDL[oi][0]+'</button>';
- h+='</div><p class="pts">Улучшение надетого</p><div class="lst">';var anyU=false;
- for(i=0;i<SLOTS.length;i++){var iu=C.eq[SLOTS[i][0]];if(iu&&!iu.st&&(B[iu.b].dmg||B[iu.b].def)&&(iu.up||0)<upMax(iu)){anyU=true;var nu=(iu.up||0)+1;h+=itRow(iu,'<button class="pb up2" data-s="'+SLOTS[i][0]+'">До +'+nu+' · '+upCost(iu)+'<br><small>успех '+UPC[nu-1]+'%'+(nu>=6?' · поломка 25%':'')+'</small></button>',SLOTS[i][0]==='o');}}
- if(!anyU)h+='<p>Улучшать нечего. Улучшаются надетые оружие, щиты и броня, кроме казённых. Каждый уровень даёт +8% к урону или защите. Броня и щиты — до +5, оружие — до +10.</p>';
- h+='<p>С +6 заточка опасна: в 25% попыток оружие ломается и исчезает. С +5 оружие светится: белым, ярко-белым на +6, голубым на +7, синим на +8, бледно-красным на +9 и красным на +10.</p>';
- h+='</div><p class="pts">Продать из сумки</p><div class="lst">';
- if(!C.bag.length)h+='<p>Сумка пуста.</p>';
- for(i=0;i<C.bag.length;i++)h+=itRow(C.bag[i],'<button class="pb sl" data-i="'+i+'">'+(C.bag[i].st?'Сдать даром':'Продать · '+sellV(C.bag[i]))+'</button>');
- h+='</div>';
- show(h+back());on('bk',city);
+ var h=head('Кузница')+(msgT?'<div style="border:1px solid '+(mIt?QC[mIt.q]:'#3a4158')+';border-radius:14px;padding:8px 10px;margin:8px 0;background:rgba(18,15,12,0.92)"><p class="pts" style="margin:2px 0 6px">'+msgT+'</p>'+(mIt?'<div class="lst">'+itRow(mIt,'')+'</div>':'')+'</div>':'')+'',i,any=false,sells=C.bag.filter(function(q){return !q.st;}).length;
+ h+='<div class="nav">'+[['buy','Покупка',C.shop.length],['sell','Продажа',C.bag.length],['up','Заточка',0],['ord','Заказ',0]].map(function(t){return '<button class="nv smt'+(smTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+(t[2]?' <span class="dot">'+t[2]+'</span>':'')+'</button>';}).join('')+'</div>';
+ var hB='<p class="pts">Товар кузнеца · обновляется после каждой экспедиции</p><div class="lst">';
+ if(!C.shop.length)hB+='<p>Всё распродано.</p>';
+ for(i=0;i<C.shop.length;i++)hB+=itRow(C.shop[i],'<button class="pb sb" data-i="'+i+'">Купить · '+price(C.shop[i])+'</button>');
+ hB+='</div>';var hO='<p class="pts">Заказ у мастера · '+ORDP+' золота</p><p>Мастер куёт случайную вещь выбранного вида, не хуже хорошего качества. Качество: уникальное 1%, эпическое 5%, лучшее 20%, хорошее — остальное. Грейд: S 5%, A 10%, B 20%, C 25%, D — остальное.</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">';
+ for(var oi=0;oi<ORDL.length;oi++)hO+='<button class="pb ord" data-o="'+oi+'" style="display:inline-flex;align-items:center;gap:4px">'+icoSvg(ORDL[oi][2],'#e8d2a0',18)+ORDL[oi][0]+'</button>';
+ hO+='</div>';var hU='<p class="pts">Улучшение надетого</p><div class="lst">';var anyU=false;
+ for(i=0;i<SLOTS.length;i++){var iu=C.eq[SLOTS[i][0]];if(iu&&!iu.st&&(B[iu.b].dmg||B[iu.b].def)&&(iu.up||0)<upMax(iu)){anyU=true;var nu=(iu.up||0)+1;hU+=itRow(iu,'<button class="pb up2" data-s="'+SLOTS[i][0]+'">До +'+nu+' · '+upCost(iu)+'<br><small>успех '+UPC[nu-1]+'%'+(nu>=6?' · поломка 25%':'')+'</small></button>',SLOTS[i][0]==='o');}}
+ if(!anyU)hU+='<p>Улучшать нечего. Улучшаются надетые оружие, щиты и броня, кроме казённых. Каждый уровень даёт +8% к урону или защите. Броня и щиты — до +5, оружие — до +10.</p>';
+ hU+='<p>С +6 заточка опасна: в 25% попыток оружие ломается и исчезает. С +5 оружие светится: белым, ярко-белым на +6, голубым на +7, синим на +8, бледно-красным на +9 и красным на +10.</p>';
+ hU+='</div>';var cheap=C.bag.filter(function(q){return !q.st&&q.q<=0&&!q.u;}),cheapV=cheap.reduce(function(a,q){return a+sellV(q);},0);
+ var hS='<p class="pts">Продать из сумки · '+C.bag.length+' из 20</p>'+(cheap.length?'<button class="pb sla" style="margin:4px 0 8px">Продать все простые ('+cheap.length+') · '+cheapV+'</button>':'')+'<div class="lst">';
+ if(!C.bag.length)hS+='<p>Сумка пуста.</p>';
+ for(i=0;i<C.bag.length;i++)hS+=itRow(C.bag[i],'<button class="pb sl" data-i="'+i+'">'+(C.bag[i].st?'Сдать даром':'Продать · '+sellV(C.bag[i]))+'</button>');
+ hS+='</div>';
+ h+=smTab==='sell'?hS:smTab==='up'?hU:smTab==='ord'?hO:hB;
+ var sc=ui.scrollTop,same=smith.last===smTab;smith.last=smTab;show(h+back());if(same)ui.scrollTop=sc;on('bk',city);
+ each('smt',function(){smTab=this.getAttribute('data-t');smith();});
+ each('sla',function(){var tot=0;for(var q=C.bag.length-1;q>=0;q--){var it4=C.bag[q];if(!it4.st&&it4.q<=0&&!it4.u){tot+=sellV(it4);C.bag.splice(q,1);}}C.gold+=tot;save();sfx('item');smith('Проданы простые вещи: +'+tot+' золота.');});
  each('ord',function(){var o=ORDL[+this.getAttribute('data-o')];if(C.gold<ORDP){smith('Не хватает золота: нужно '+ORDP+'.');return;}if(C.bag.length>=20){smith('Сумка полна.');return;}C.gold-=ORDP;var it3=orderItem(o[1]);C.bag.push(it3);save();sfx(it3.q>=3?'ess':'item');smith('Мастер выковал'+(it3.q>=4?' УНИКАЛЬНУЮ вещь':it3.q>=3?' эпическую вещь':'')+'! Вещь положена в сумку:',it3);});
  each('sb',function(){var ix=+this.getAttribute('data-i'),it2=C.shop[ix],pr=price(it2);if(C.gold<pr){smith('Не хватает золота: нужно '+pr+'.');return;}if(C.bag.length>=20){smith('Сумка полна.');return;}C.gold-=pr;C.shop.splice(ix,1);C.bag.push(it2);save();smith('Куплено, вещь в сумке:',it2);});
  each('up2',function(){var it3=C.eq[this.getAttribute('data-s')],c3=upCost(it3);if(C.gold<c3){smith('Не хватает золота: нужно '+c3+'.');return;}var sl3=this.getAttribute('data-s'),nu3=(it3.up||0)+1,roll=Math.random()*100;C.gold-=c3;
@@ -1366,7 +1407,7 @@ function finish(alive){setBg(alive?'gate':'death');
 }
 function city(){setBg('city');
  show('<h1>Оплот</h1><p>'+(heroIcon(C.race)?'<img src="'+heroIcon(C.race)+'" width="40" height="40" style="vertical-align:middle;margin-right:6px;border-radius:50%;background:#151a2a;border:1.5px solid '+(C.sp+C.pp+C.tp>0?'#ffc53d':'#2f3750')+'">':'')+RACES[C.race].name+' · уровень '+C.lvl+' · ранг Гильдии: '+RANKS[rank()-1]+'</p><p class="stat">Золото: '+C.gold+(C.debt?' · есть долг перед Казначейством':'')+'</p><div class="races">'+
-  cb('gate','Врата Лабиринта','Спуск в Лабиринт · десятина '+tax()+' золота','gate','#c9b8ff','gateb')+cb('hero','Герой','Характеристики, эссенции, камни, древо'+(C.sp+C.pp+C.tp>0?'<br><span style="color:#ffc53d">есть очки!</span>':''),'heroI','#5ee6d0',C.sp+C.pp+C.tp>0?'glw':'')+cb('gear','Снаряжение','Надетые вещи и сумка: '+C.bag.length+' из 20','armor','#6aa5ff')+cb('stash','Сундук','Склад вещей: '+((C.stash||[]).length)+' из 40','chest','#d8a060')+cb('smith','Кузница','Покупка, улучшение, заказ','anvil','#ff8a3d')+cb('guild','Гильдия','Ранг и бестиарий','banner','#e5484d')+cb('alch','Алхимик','Сосуды и камни возврата','flask','#6fdc8c')+cb('temple','Храм','Эссенции и пассивное древо','temple','#9b7bff')+cb('treas','Казначейство','Десятина и долги','coins','#ffc53d')+cb('saves','Настройки','Звук, новый герой','cog','#8f99b3')+
+  cb('gate','Врата Лабиринта','Спуск в Лабиринт · десятина '+tax()+' золота','gate','#c9b8ff','gateb')+cb('hero','Герой','Характеристики, эссенции, камни, древо'+(C.sp+C.pp+C.tp>0?'<br><span style="color:#ffc53d">есть очки!</span>':''),'heroI','#e0c48a',C.sp+C.pp+C.tp>0?'glw':'')+cb('gear','Снаряжение','Надетые вещи и сумка: '+C.bag.length+' из 20','armor','#6aa5ff')+cb('stash','Сундук','Склад вещей: '+((C.stash||[]).length)+' из 40','chest','#d8a060')+cb('smith','Кузница','Покупка, улучшение, заказ','anvil','#ff8a3d')+cb('guild','Гильдия','Ранг и бестиарий','banner','#e5484d')+cb('alch','Алхимик','Сосуды и камни возврата','flask','#6fdc8c')+cb('temple','Храм','Эссенции и пассивное древо','temple','#9b7bff')+cb('treas','Казначейство','Десятина и долги','coins','#ffc53d')+cb('saves','Настройки','Звук, новый герой','cog','#8f99b3')+
   '</div>');
  on('gate',gate);on('hero',function(){sheet('camp');});on('gear',function(){gsel=null;gear('camp');});on('stash',function(){ssel=null;stashS();});on('smith',function(){smith();});on('guild',guild);on('alch',alch);on('temple',temple);on('treas',treas);on('saves',saves);
 }
@@ -1535,7 +1576,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.29 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.30 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p><button id="go">'+(C?'Продолжить':'Создать героя')+'</button>';
  ui.className='';document.getElementById('go').addEventListener('click',function(){if(C)city();else raceSelect();});
 }
 
@@ -2159,14 +2200,14 @@ function hud(){
  if(msgT>0){ctx.textAlign='center';ctx.globalAlpha=clamp(msgT,0,1);ctx.fillStyle='#f4f7ff';ctx.font='bold 16px system-ui,sans-serif';ctx.fillText(msg,VW/2,98);ctx.globalAlpha=1;}
  if(!bigMap)minimap();
  var jx=92,jy=VH-92,kx=jx,ky=jy;if(joy){jx=joy.ox;jy=joy.oy;kx=jx+input.x*50;ky=jy+input.y*50;}
- ctx.strokeStyle='#2f3750';ctx.lineWidth=2;ctx.fillStyle='rgba(14,17,25,0.5)';ctx.beginPath();ctx.arc(jx,jy,54,0,6.283);ctx.fill();ctx.stroke();
- ctx.strokeStyle='#5ee6d0';ctx.fillStyle='#151a2a';ctx.beginPath();ctx.arc(kx,ky,22,0,6.283);ctx.fill();ctx.stroke();
+ ctx.strokeStyle='#3e3628';ctx.lineWidth=2;ctx.fillStyle='rgba(16,13,10,0.5)';ctx.beginPath();ctx.arc(jx,jy,54,0,6.283);ctx.fill();ctx.stroke();
+ ctx.strokeStyle=CTRL;ctx.fillStyle='#1d1812';ctx.beginPath();ctx.arc(kx,ky,22,0,6.283);ctx.fill();ctx.stroke();
  var b=btns(),k,wIco=wKey();ctx.textAlign='center';
  for(k=0;k<b.length;k++){var B=b[k];ctx.beginPath();ctx.arc(B.x,B.y,B.r,0,6.283);
-  if(B.id==='atk'){ctx.lineWidth=3;ctx.strokeStyle='#5ee6d0';ctx.fillStyle=input.atk?'#12302b':'rgba(11,22,20,0.8)';ctx.fill();ctx.stroke();drawIco(wIco,B.x,B.y-7,30,'#bff5ea');ctx.fillStyle='#f4f7ff';ctx.font='bold 11px system-ui,sans-serif';ctx.fillText('Атака',B.x,B.y+22);}
-  else if(B.id==='dodge'){var rdy=hero.dCd<=0;ctx.lineWidth=1.5;ctx.strokeStyle=rdy?'#8f99b3':'#3a4158';ctx.fillStyle='rgba(14,17,25,0.8)';ctx.fill();ctx.stroke();
-   if(!rdy){ctx.strokeStyle='#5ee6d0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(B.x,B.y,B.r,-1.57,-1.57+6.283*(1-hero.dCd/(hero.dMax||1.5)));ctx.stroke();}
-   ctx.fillStyle=rdy?'#c9d1e6':'#5b6480';ctx.font='11px system-ui,sans-serif';ctx.fillText('Перекат',B.x,B.y);}
+  if(B.id==='atk'){ctx.lineWidth=3;ctx.strokeStyle=CTRL;ctx.fillStyle=input.atk?'#3a2a18':'rgba(26,19,12,0.82)';ctx.fill();ctx.stroke();drawIco(wIco,B.x,B.y-7,30,'#f0dcb0');ctx.fillStyle='#f0dcb0';ctx.font='bold 11px system-ui,sans-serif';ctx.fillText('Атака',B.x,B.y+22);}
+  else if(B.id==='dodge'){var rdy=hero.dCd<=0;ctx.lineWidth=1.5;ctx.strokeStyle=rdy?'#8a7a60':'#3e3628';ctx.fillStyle='rgba(18,15,12,0.8)';ctx.fill();ctx.stroke();
+   if(!rdy){ctx.strokeStyle=CTRL;ctx.lineWidth=3;ctx.beginPath();ctx.arc(B.x,B.y,B.r,-1.57,-1.57+6.283*(1-hero.dCd/(hero.dMax||1.5)));ctx.stroke();}
+   ctx.fillStyle=rdy?'#d8ccb4':'#5a5246';ctx.font='11px system-ui,sans-serif';ctx.fillText('Перекат',B.x,B.y);}
   else if(B.id==='flask'||B.id==='mflask'){var isH=B.id==='flask',fn=isH?hero.flask:hero.mflask;ctx.lineWidth=1.5;ctx.strokeStyle=fn>0?(isH?'#e5484d':'#4c8dff'):'#3a4158';ctx.fillStyle=isH?'rgba(23,11,14,0.85)':'rgba(10,16,32,0.85)';ctx.fill();ctx.stroke();
    ctx.fillStyle=fn>0?(isH?'#ff9aa0':'#9cc0ff'):'#5b6480';ctx.font='bold 14px system-ui,sans-serif';ctx.fillText(''+fn,B.x,B.y-4);ctx.font='9px system-ui,sans-serif';ctx.fillText(isH?'ХП':'МП',B.x,B.y+10);}
   else if(B.id==='bag'){ctx.lineWidth=1.5;ctx.strokeStyle='#8f99b3';ctx.fillStyle='rgba(14,17,25,0.85)';ctx.fill();ctx.stroke();ctx.fillStyle='#c9d1e6';ctx.font='bold 12px system-ui,sans-serif';ctx.fillText(''+C.bag.length,B.x,B.y-4);ctx.font='9px system-ui,sans-serif';ctx.fillText('сумка',B.x,B.y+9);}
