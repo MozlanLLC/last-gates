@@ -17,7 +17,12 @@ CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, nick TEXT NOT NULL, nke
 CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY, uid INTEGER NOT NULL, exp INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS chars(uid INTEGER PRIMARY KEY, data TEXT, saved INTEGER, race TEXT, lvl INTEGER, ms INTEGER);
 CREATE TABLE IF NOT EXISTS friends(a INTEGER NOT NULL, b INTEGER NOT NULL, state TEXT NOT NULL, since INTEGER NOT NULL, PRIMARY KEY(a,b));
-CREATE TABLE IF NOT EXISTS hall(id INTEGER PRIMARY KEY, uid INTEGER, data TEXT, at INTEGER);`);
+CREATE TABLE IF NOT EXISTS hall(id INTEGER PRIMARY KEY, uid INTEGER, data TEXT, at INTEGER);
+CREATE TABLE IF NOT EXISTS chars2(uid INTEGER NOT NULL, slot INTEGER NOT NULL, data TEXT, saved INTEGER, race TEXT, lvl INTEGER, ms INTEGER, PRIMARY KEY(uid, slot));`);
+try { db.exec('ALTER TABLE users ADD COLUMN cur INTEGER DEFAULT 0'); } catch (e) {}
+if (!db.prepare('SELECT 1 FROM chars2 LIMIT 1').get()) db.exec('INSERT OR IGNORE INTO chars2(uid,slot,data,saved,race,lvl,ms) SELECT uid,0,data,saved,race,lvl,ms FROM chars');
+// активный герой аккаунта: для друзей, группы и Арены
+const CUR = 'chars2 c ON c.uid=u.id AND c.slot=u.cur';
 
 const now = () => Date.now();
 const DAY = 864e5;
@@ -51,7 +56,7 @@ function checkChar(c) {
 }
 
 function friendRows(uid) {
-  return db.prepare(`SELECT f.b AS id, f.state, u.nick, u.tag, c.race, c.lvl, c.ms FROM friends f JOIN users u ON u.id=f.b LEFT JOIN chars c ON c.uid=f.b WHERE f.a=?`).all(uid);
+  return db.prepare(`SELECT f.b AS id, f.state, u.nick, u.tag, c.race, c.lvl, c.ms FROM friends f JOIN users u ON u.id=f.b LEFT JOIN ${CUR} WHERE f.a=?`).all(uid);
 }
 function pubUser(r) {
   const p = online(r.id);
@@ -91,25 +96,33 @@ function session(uid, nick, tag) {
 }
 R['POST /api/logout'] = (q) => { db.prepare('DELETE FROM sessions WHERE token=?').run(q.token); return { ok: true }; };
 
+const slotOf = v => Math.max(0, Math.min(2, v | 0));
 R['GET /api/me'] = (q) => {
-  const c = db.prepare('SELECT saved, data IS NOT NULL AS has FROM chars WHERE uid=?').get(q.uid);
-  return { nick: q.user.nick, tag: q.user.tag, hasChar: !!(c && c.has), saved: c ? c.saved : 0 };
+  const c = db.prepare('SELECT COUNT(*) AS n FROM chars2 WHERE uid=? AND data IS NOT NULL').get(q.uid);
+  return { nick: q.user.nick, tag: q.user.tag, heroes: c.n };
+};
+R['GET /api/chars'] = (q) => {
+  const rows = db.prepare('SELECT slot, data, saved FROM chars2 WHERE uid=? AND data IS NOT NULL').all(q.uid), out = [null, null, null];
+  rows.forEach(r => { try { const c = JSON.parse(r.data); out[r.slot] = { race: c.race, lvl: c.lvl, gold: c.gold, ms: c.ms || 0, ar: c.ar ? c.ar.r : 1000, saved: r.saved }; } catch (e) {} });
+  return { slots: out };
 };
 R['GET /api/save'] = (q) => {
-  const c = db.prepare('SELECT data, saved FROM chars WHERE uid=?').get(q.uid);
+  const c = db.prepare('SELECT data, saved FROM chars2 WHERE uid=? AND slot=?').get(q.uid, slotOf(q.query.slot));
   return { char: c && c.data ? JSON.parse(c.data) : null, saved: c ? c.saved : 0 };
 };
 R['PUT /api/save'] = (q, b) => {
+  const sl = slotOf(b.slot);
   if (b.died) {
-    const old = db.prepare('SELECT data FROM chars WHERE uid=?').get(q.uid);
-    if (old && old.data) db.prepare('INSERT INTO hall(uid,data,at) VALUES(?,?,?)').run(q.uid, old.data, now());
-    db.prepare('INSERT INTO chars(uid,data,saved,race,lvl,ms) VALUES(?,NULL,?,NULL,0,0) ON CONFLICT(uid) DO UPDATE SET data=NULL,saved=excluded.saved,race=NULL,lvl=0,ms=0').run(q.uid, now());
+    const old = db.prepare('SELECT data FROM chars2 WHERE uid=? AND slot=?').get(q.uid, sl);
+    if (old && old.data && !b.del) db.prepare('INSERT INTO hall(uid,data,at) VALUES(?,?,?)').run(q.uid, old.data, now());
+    db.prepare('INSERT INTO chars2(uid,slot,data,saved,race,lvl,ms) VALUES(?,?,NULL,?,NULL,0,0) ON CONFLICT(uid,slot) DO UPDATE SET data=NULL,saved=excluded.saved,race=NULL,lvl=0,ms=0').run(q.uid, sl, now());
     return { ok: true, saved: now() };
   }
   const err = checkChar(b.char); if (err) return [400, 'Сохранение отклонено: ' + err];
   const t = now(), c = b.char;
-  db.prepare('INSERT INTO chars(uid,data,saved,race,lvl,ms) VALUES(?,?,?,?,?,?) ON CONFLICT(uid) DO UPDATE SET data=excluded.data,saved=excluded.saved,race=excluded.race,lvl=excluded.lvl,ms=excluded.ms')
-    .run(q.uid, JSON.stringify(c), t, c.race, c.lvl | 0, c.ms | 0);
+  db.prepare('INSERT INTO chars2(uid,slot,data,saved,race,lvl,ms) VALUES(?,?,?,?,?,?,?) ON CONFLICT(uid,slot) DO UPDATE SET data=excluded.data,saved=excluded.saved,race=excluded.race,lvl=excluded.lvl,ms=excluded.ms')
+    .run(q.uid, sl, JSON.stringify(c), t, c.race, c.lvl | 0, c.ms | 0);
+  db.prepare('UPDATE users SET cur=? WHERE id=?').run(sl, q.uid);
   return { ok: true, saved: t };
 };
 R['POST /api/status'] = (q, b) => {
@@ -169,7 +182,7 @@ function send(res, code, obj) {
 }
 const server = http.createServer((req, res) => {
   if (req.method === 'OPTIONS') return send(res, 204, {});
-  const url = req.url.split('?')[0], key = req.method + ' ' + url, fn = R[key];
+  const url = req.url.split('?')[0], key = req.method + ' ' + url, fn = R[key], query = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
   if (!fn) return send(res, 404, { error: 'Нет такого адреса' });
   let size = 0; const chunks = [];
   req.on('data', d => { size += d.length; if (size > 400e3) { send(res, 413, { error: 'Слишком большой запрос' }); req.destroy(); } else chunks.push(d); });
@@ -177,7 +190,7 @@ const server = http.createServer((req, res) => {
     if (res.writableEnded) return;
     let b = {};
     try { if (chunks.length) b = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { return send(res, 400, { error: 'Неверный JSON' }); }
-    const q = { ip: req.headers['x-real-ip'] || req.socket.remoteAddress };
+    const q = { ip: req.headers['x-real-ip'] || req.socket.remoteAddress, query };
     if (!OPEN.has(key)) {
       const tok = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
       const s = tok && db.prepare('SELECT s.uid, s.exp, u.nick, u.tag FROM sessions s JOIN users u ON u.id=s.uid WHERE s.token=?').get(tok);
@@ -217,7 +230,7 @@ function toUid(uid, obj) { wsSend(conns.get(uid), obj); }
 function nickOf(uid) { const u = db.prepare('SELECT nick FROM users WHERE id=?').get(uid); return u ? u.nick : '?'; }
 function partyView(p) {
   return { id: p.id, leader: p.leader, state: p.state, host: p.host || 0, members: p.members.map(uid => {
-    const c = db.prepare('SELECT race,lvl FROM chars WHERE uid=?').get(uid) || {};
+    const c = db.prepare('SELECT c.race,c.lvl FROM users u JOIN ' + CUR + ' WHERE u.id=?').get(uid) || {};
     const pr = online(uid);
     return { uid, nick: nickOf(uid), race: c.race || null, lvl: c.lvl || 0, ready: !!p.ready[uid], online: conns.has(uid), look: looks.get(uid) || null, st: pr ? pr.st : 'off', f: pr ? pr.f : 0 };
   }) };
