@@ -883,8 +883,8 @@ function partyBind(){on('pleave',function(){wsSend({t:'leave'});PARTY=null;scrRe
 function lookO(){var rv=RV[C.race]||RV.human,e=C.eq,wi=works(e.w)?B[e.w.b].fam:null,ob=works(e.o)?B[e.o.b]:null;
  return {skin:rv.skin,hair:rv.hair,ears:rv.ears,body:works(e.a)?AV[e.a.g]:'#8a6b45',ag:works(e.a)?e.a.g:-1,hgr:works(e.h)?e.h.g:-1,glc:works(e.gl)?(e.gl.g>=5?'#8e1f26':e.gl.g>=1?GDRK[e.gl.g]:'#8d93a0'):null,head:works(e.h)?'helm':'hair',weapon:wi,wgr:works(e.w)?e.w.g:-1,wu:works(e.w)&&!!e.w.u,shield:!!(ob&&(ob.fam==='shield'||ob.fam==='sigil')),off:ob&&ob.slot==='w'?ob.fam:null,ogr:ob?e.o.g:-1,ou:!!(ob&&e.o.u),wg:works(e.w)?glowOf(e.w):null,og:ob&&ob.slot==='w'?glowOf(e.o):null};}
 var VOLAT={x:1,y:1,hp:1,cp:1,mp:1,inv:1,atk:1,dT:1,dCd:1,hurt:1,since:1,cpS:1,down:1,rv:1,leap:1,pois:1,hot:1,bar:1,zones:1,mets:1,cls:1,rep:1,scd:1,flask:1,mflask:1,recall:1,rvp:1,lvlG:1,dvx:1,dvy:1};
-function myStats(all){var o={};for(var k in hero){var v=hero[k];if(typeof v==='function'||(!all&&VOLAT[k]))continue;o[k]=v;}return JSON.parse(JSON.stringify(o));}
-function withHero(a,fn){var h0=hero,sw=swing;hero=a;try{fn();}catch(e){if(window.console)console.error(e);}hero=h0;swing=sw;}
+function myStats(all){var o={};for(var k in hero){var v=hero[k];if(typeof v==='function'||(!all&&VOLAT[k])||k==='MOD')continue;o[k]=v;}o.MOD=M();return JSON.parse(JSON.stringify(o));}
+function withHero(a,fn){var h0=hero,sw=swing,mc0=MC;hero=a;if(a.MOD)MC=a.MOD;try{fn();}catch(e){if(window.console)console.error(e);}hero=h0;swing=sw;MC=(a.MOD&&MC!==a.MOD)?null:mc0;}
 function coopPl(){var a=[coop.me];for(var k in coop.al)if(!coop.al[k].dead)a.push(coop.al[k]);return a;}
 function coopTgt(m){if(!m.tgT||m.tgT<elapsed||!m.tg||m.tg.dead||m.tg.down){m.tgT=elapsed+0.5;var best=coop.me,bd=1e9;coopPl().forEach(function(p){if(p.down)return;var d=dist(p,m);if(d<bd){bd=d;best=p;}});m.tg=best;}return m.tg;}
 function allNear(pt,r){if(coopM())return false;if(!coop)return dist(hero,pt)<r;return coopPl().every(function(p){return dist(p,pt)<r;});}
@@ -901,7 +901,7 @@ function coopSendFloor(){if(!coop||!coop.host)return;
 function coopTP(x,y){if(!coop||!coop.host)return;for(var k in coop.al){var a=coop.al[k];a.x=x+rnd(-20,20);a.y=y+30;rel({t:'tp',x:Math.round(a.x),y:Math.round(a.y)},a.uid);}}
 function coopRel(from,d){if(!coop)return;
  if(coop.host){var a=coop.al[from];
-  if(d.t==='hi'){var fresh=!a;a=a||{uid:from,nick:memNick(from)};Object.assign(a,d.h);a.look=d.look;coop.look[from]=d.look;
+  if(d.t==='hi'){var fresh=!a;if(fresh&&d.v!==GVER){if(coop.duel&&colo){colo.vbad=d.v||'старая';coloEnd('void');return;}say(memNick(from)+': другая версия игры ('+(d.v||'старая')+'), возможны ошибки');}a=a||{uid:from,nick:memNick(from)};Object.assign(a,d.h);a.look=d.look;coop.look[from]=d.look;
    if(fresh&&coop.duel){a.x=30.5*T;a.y=13.5*T;}
    if(fresh){if(!coop.duel){a.x=hero.x+rnd(-24,24);a.y=hero.y+30;}a.hp=a.mhp;a.cp=a.mcp;a.mp=a.mmp;a.down=0;a.rv=0;a.atk=0;a.dCd=0;a.dT=0;a.inv=1;a.hurt=0;if(coop.duel){a.flask=1;a.mflask=1;}a.since=9;a.cpS=9;a.scd={};a.rep=[];a.zones=[];a.mets=[];a.cls=[];a.leap=null;a.pois=null;a.hot=null;a.bar=null;coop.al[from]=a;say(a.nick+' в группе');}return;}
   if(!a||a.dead)return;a.lastMsg=Date.now();
@@ -909,7 +909,7 @@ function coopRel(from,d){if(!coop)return;
   if(d.t==='st'){Object.assign(a,d.h);return;}
   if(a.down)return;
   var WH=coop.duel?withOpp:withHero;
-  if(d.t==='atk')WH(a,function(){a.fx=d.fx;a.fy=d.fy;attack0();});
+  if(d.t==='atk')WH(a,function(){a.fx=d.fx;a.fy=d.fy;a.atk=0;attack0();});
   else if(d.t==='dg'){a.inv=0.3;}
   else if(d.t==='fl')withHero(a,flask0);
   else if(d.t==='mfl')withHero(a,mflask0);
@@ -920,7 +920,7 @@ function coopRel(from,d){if(!coop)return;
  else if(d.t==='k')coopKillM(d);
  else if(d.t==='tp'){hero.x=d.x;hero.y=d.y;hero.leap=null;hero.dT=0;}
  else if(d.t==='dead'){coop.endOK=true;wsSend({t:'leave'});finish(false);coop=null;}
- else if(d.t==='dres'){if(colo){var cr=d.res;coop.endOK=true;coloEnd(cr);}}
+ else if(d.t==='dres'){if(colo){var cr=d.res;coop.endOK=true;coloEnd(cr,d.v);}}
  else if(d.t==='end')coopFinishM(d.hd?'Ведущий пал. Группа вернулась в город с добычей':'Группа вышла из Лабиринта');}
 function qFloorReach(){if(C.q&&!C.q.done&&C.q.t==='deep'&&floor>=C.q.f&&!C.q.c){C.q.c=1;say('Задание: этаж '+floor+' достигнут — теперь вернитесь живым');}}
 function coopApplyFloor(d){var first=!coop.me;
@@ -935,7 +935,7 @@ function coopApplyFloor(d){var first=!coop.me;
  if(!coop.duel&&!C.fl[floor]){C.fl[floor]=1;gainXp(40*floor,'первый спуск на этаж '+floor);}
  if(coop.duel){hero.hp=hero.mhp;hero.cp=hero.mcp;hero.mp=hero.mmp;hero.flask=1;hero.mflask=1;}
  if(!coop.duel){qFloorReach();say('Этаж '+floor+' · '+FLOORS[floor-1].n);}else say('Колизей! Бой 1 на 1 до 3 минут');state='play';ui.className='hide';setTimeout(heartbeat,300);
- rel({t:'hi',h:myStats(true),look:lookO()});}
+ rel({t:'hi',v:GVER,h:myStats(true),look:lookO()});}
 function coopSnap(d){timeLeft=d.tl;dark=d.dk;closedF=!!d.cl;var ids={},arr=[];
  (d.m||[]).forEach(function(q){var m=coop.mm[q[0]],T0=TYPES[q[1]]||TYPES.gob;
   if(!m){m={id:q[0],type:q[1],x:q[2],y:q[3],r:q[11]||T0.r,ai:T0.ai,col:T0.col,dots:[],t:0,cd:0,flash:0,human:!!T0.human,st:[0,0]};coop.mm[q[0]]=m;}
@@ -953,7 +953,7 @@ function coopKillH(m){var al=0;for(var i=0;i<mons.length;i++){var o=mons[i];if(o
 function coopFinishM(msg0){if(!coop)return;coop.endOK=true;finish(true);coop=null;MM=[];if(msg0)toast(esc(msg0),null,6000);}
 function coopLost(){if(coopM())coopFinishM('Связь с группой потеряна (код '+wsLastCode+'). Вы вернулись в город с добычей');else if(coop){coop=null;say('Связь с группой потеряна, вы продолжаете один');}}
 function coopHostDeath(){coop.endOK=true;wsSend({t:'end',d:{t:'end',hd:1}});finish(false);coop=null;}
-function coopTick(dt){if(!coop||!coop.me)return;if(coop.lostAt&&Date.now()-coop.lostAt>20000){coop.lostAt=0;coopLost();return;}
+var DT0=0.016;function coopTick(dt){DT0=dt;if(!coop||!coop.me)return;if(coop.lostAt&&Date.now()-coop.lostAt>20000){coop.lostAt=0;coopLost();return;}
  if(!coop.host){var k=Math.min(1,dt*20);for(var i=0;i<MM.length;i++){var m=MM[i];m.x+=(m.tx-m.x)*k;m.y+=(m.ty-m.y)*k;if(m.flash>0)m.flash-=dt;}
   coop.pT-=dt;if(coop.pT<=0){coop.pT=0.033;rel({t:'p',x:Math.round(hero.x),y:Math.round(hero.y),fx:+(hero.fx||1).toFixed(2),fy:+(hero.fy||0).toFixed(2),mv:Math.abs(input.x)+Math.abs(input.y)>0.15?1:0});}
   coop.stT-=dt;if(coop.stT<=0){coop.stT=6;rel({t:'st',h:myStats(false)});}return;}
@@ -971,18 +971,19 @@ function coopSnaps(){var pl=coopPl(),P=pl.map(function(p){return [p===coop.me?MY
  for(var k in coop.al){var a=coop.al[k],near=function(o){return Math.abs(o.x-a.x)<600&&Math.abs(o.y-a.y)<440;},M2=[];
   for(i=0;i<mons.length;i++){var m=mons[i];if(m.pvp||m.hp<=0||!near(m))continue;M2.push([m.id,m.type,Math.round(m.x),Math.round(m.y),Math.round(m.hp),Math.round(m.mhp),+(m.ang||0).toFixed(2),m.state,(m.elite?1:0)|(m.boss?2:0)|(m.rb?4:0),(m.elite||m.boss||m.rb||m.human||m.afx)?m.label:'',m.afx||'',m.r]);}
   rel(Object.assign({},base,{m:M2,e:eshots.filter(near).map(function(e){return [Math.round(e.x),Math.round(e.y),Math.round(e.vx),Math.round(e.vy),e.eff||''];}),f:fq.filter(function(f){return near({x:f[0],y:f[1]});})}),a.uid);}}
-function coopPeers(){var pl;if(coop.host)pl=coopPl().map(function(p){return {uid:p===coop.me?MYUID:p.uid,x:p.x,y:p.y,fx:p.fx,fy:p.fy,down:p.down,rv:(p.rv||0)/3,hp:p.hp,mhp:p.mhp,mv:p.mv,lag:p!==coop.me&&p.lastMsg&&Date.now()-p.lastMsg>3000};});
- else pl=(coop.pl||[]).map(function(q){return {uid:q[0],x:q[0]===MYUID?hero.x:q[1],y:q[0]===MYUID?hero.y:q[2],fx:q[3],fy:q[4],hp:q[5],mhp:q[6],down:q[9],rv:q[10],mv:q[11]};});
+function coopPeers(){var pl;if(coop.host)pl=coopPl().map(function(p){return {uid:p===coop.me?MYUID:p.uid,x:p.x,y:p.y,fx:p.fx,fy:p.fy,down:p.down,rv:(p.rv||0)/3,hp:p.hp,mhp:p.mhp,cp:p.cp,mcp:p.mcp,mv:p.mv,lag:p!==coop.me&&p.lastMsg&&Date.now()-p.lastMsg>3000};});
+ else pl=(coop.pl||[]).map(function(q){return {uid:q[0],x:q[0]===MYUID?hero.x:q[1],y:q[0]===MYUID?hero.y:q[2],fx:q[3],fy:q[4],hp:q[5],mhp:q[6],cp:q[7],mcp:q[8],down:q[9],rv:q[10],mv:q[11]};});
  return pl;}
 function coopDrawW(){if(!coop||!coop.me)return;var pl=coopPeers();
  pl.forEach(function(p){if(p.uid===MYUID)return;var L=coop.look[p.uid]||{};var o=Object.assign({},L,{step:p.mv?elapsed*12:0,flash:false,sw:-1,sw2:-1});
   if(p.down)ctx.globalAlpha=0.45;human(p.x,p.y,13,Math.atan2(p.fy||0,p.fx||1),o);ctx.globalAlpha=1;
   ctx.textAlign='center';ctx.font='bold 11px system-ui,sans-serif';ctx.fillStyle=coop.duel?'#ff9aa0':'#8fd3ff';ctx.fillText(memNick(p.uid),p.x,p.y-30);
-  bar(p.x-16,p.y-26,32,4,Math.max(0,p.hp/(p.mhp||1)),'#6fdc8c');if(p.lag){ctx.fillStyle='#ffc53d';ctx.font='10px system-ui,sans-serif';ctx.fillText('нет связи',p.x,p.y-42);}
+  bar(p.x-16,p.y-26,32,4,Math.max(0,p.hp/(p.mhp||1)),'#6fdc8c');if(p.mcp)bar(p.x-16,p.y-21,32,3,Math.max(0,(p.cp||0)/p.mcp),'#ffc53d');
+  if(coop.duel){var bw=200,bx=VW/2-bw/2,by=58;ctx.save();ctx.setTransform(dpr*S,0,0,dpr*S,0,0);ctx.fillStyle="rgba(10,8,12,0.75)";ctx.fillRect(bx-8,by-16,bw+16,40);ctx.textAlign='center';ctx.font='bold 11px system-ui,sans-serif';ctx.fillStyle='#ff9aa0';ctx.fillText(memNick(p.uid)+' · ХП '+Math.max(0,Math.round(p.hp))+'/'+p.mhp+(p.mcp?' · ЦП '+Math.max(0,Math.round(p.cp||0))+'/'+p.mcp:''),VW/2,by-4);bar(bx,by+2,bw,7,Math.max(0,p.hp/(p.mhp||1)),'#e5484d');if(p.mcp)bar(bx,by+11,bw,4,Math.max(0,(p.cp||0)/p.mcp),'#ffc53d');ctx.restore();}if(p.lag){ctx.fillStyle='#ffc53d';ctx.font='10px system-ui,sans-serif';ctx.fillText('нет связи',p.x,p.y-42);}
   if(p.down){ctx.fillStyle='#ff9aa0';ctx.fillText('Поднять! '+Math.ceil(p.down)+' с',p.x,p.y+30);if(p.rv>0){ctx.strokeStyle='#6fdc8c';ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,22,-1.57,-1.57+6.283*p.rv);ctx.stroke();}}});
  [portal,down,rift&&(rift.exit||(!rift.used?rift:null))].forEach(function(pt){if(!pt)return;var n=0;pl.forEach(function(p){if(dist(p,pt)<26)n++;});if(n){ctx.textAlign='center';ctx.font='bold 13px system-ui,sans-serif';ctx.fillStyle=n===pl.length?'#6fdc8c':'#ffe2a8';ctx.fillText(n+' / '+pl.length+' в круге',pt.x,pt.y-48);}});}
 
-var colo=null,GLR=['D','C','B','A','S'],GLT=[0,1200,1400,1600,1800],GLF=[1000,2500,4500,7000,10000],GLE=[0,0,0.1,0.2,0.35],SHN=['Кассий','Брут','Тарвин','Мирра','Гракх','Ульф','Сайра','Дерек','Нима','Корвус','Велла','Арден','Торн','Ису','Ракша','Фенн'];
+var GVER='0.49',colo=null,GLR=['D','C','B','A','S'],GLT=[0,1200,1400,1600,1800],GLF=[1000,2500,4500,7000,10000],GLE=[0,0,0.1,0.2,0.35],SHN=['Кассий','Брут','Тарвин','Мирра','Гракх','Ульф','Сайра','Дерек','Нима','Корвус','Велла','Арден','Торн','Ису','Ракша','Фенн'];
 function glr(){C.ar=C.ar||{r:1000,w:0,l:0,d:0};var r=0;for(var i=1;i<5;i++)if(C.ar.r>=GLT[i])r=i;return r;}
 function genColo(){MW=36;AH=26;MH=28;map=new Uint8Array(MW*MH);seen=new Uint8Array(MW*MH);vis=new Uint8Array(MW*MH);visL=[];flowD=null;flowTile=-1;hid=new Uint8Array(MW*MH);secret=null;crackHint=false;arena=null;
  var cx=18,cy=13,i,j;for(j=0;j<MH;j++)for(i=0;i<MW;i++){var dx=(i+0.5-cx)/15.5,dy=(j+0.5-cy)/10.5;if(dx*dx+dy*dy<=1)map[j*MW+i]=1;seen[j*MW+i]=1;}
@@ -1012,12 +1013,14 @@ function duelBegin(m){clearInterval(aqI);var op=m.members.filter(function(x){ret
 function pvpHit(p,d){if(!coop||!colo||p.inv>0)return;p.since=0;d=Math.max(1,Math.round(d*0.5));if(p.cp>0){var ab=Math.min(p.cp,d);p.cp-=ab;d-=ab;p.cpS=0;float(p.x+26,p.y-22,'ЦП −'+Math.round(ab),'#ffc53d');}
  if(d>0){p.hp-=d;float(p.x,p.y-22,'-'+d,'#ff6b6b',true);if(p===coop.me){sfx('hurt');shake=Math.max(shake,5);hero.hurt=0.25;}}
  if(p.hp<=0){p.hp=0;if(p===coop.me)finish(false);else coloEnd('win');}}
-function withOpp(a,fn){var ms=mons,me=coop.me,hm=coop.hm||(coop.hm={type:'mar',ai:'gob',label:'',r:13,hp:1e6,mhp:1e6,dots:[],st:[0,0],state:'chase',pvp:1,human:1,cd:99,t:0,sund:0,slow:0,stun:0,flash:0,col:'#fff'});
+function withOpp(a,fn){var ms=mons,me=coop.me,hm=coop.hm||(coop.hm={dacc:0,type:'mar',ai:'gob',label:'',r:13,hp:1e6,mhp:1e6,dots:[],st:[0,0],state:'chase',pvp:1,human:1,cd:99,t:0,sund:0,slow:0,stun:0,flash:0,col:'#fff'});
  hm.x=me.x;hm.y=me.y;hm.eva=me.eva||0;hm.def=me.def||0;hm.hp=1e6;mons=[hm];var n0=shots.length;withHero(a,fn);for(var i=n0;i<shots.length;i++)shots[i].own='o';mons=ms;var d=1e6-hm.hp;if(d>0)pvpHit(me,d);}
 function duelTick(){var a=coop.al[coop.opp],pm=coop.pm;if(!a)return;
  if(!pm){pm=coop.pm={type:'mar',ai:'gob',label:a.nick,x:a.x,y:a.y,r:13,hp:1e6,mhp:1e6,spd:0,dmg:0,eva:0,def:0,st:[0,0],col:'#c9a0ff',state:'chase',t:0,cd:99,flash:0,dots:[],sund:0,slow:0,stun:0,pvp:1,human:1,id:++MIDS};mons.push(pm);}
- pm.x=a.x;pm.y=a.y;pm.eva=a.eva||0;pm.def=a.def||0;var dd=1e6-pm.hp;pm.hp=1e6;pm.dots.length=0;pm.stun=0;pm.slow=0;if(dd>0)pvpHit(a,dd);}
-function coloEnd(res){var c=colo;if(!c)return;colo=null;var wasDuel=coop&&coop.duel;if(wasDuel){if(coop.host){rel({t:'dres',res:res==='win'?'loss':res==='loss'?'win':'draw'});}coop.endOK=true;wsSend({t:'dend'});coop=null;MM=[];}setTimeout(heartbeat,300);state='over';joy=null;input.atk=false;sfx(res==='win'?'win':res==='loss'?'dead':'pick');
+ pm.x=a.x;pm.y=a.y;pm.eva=a.eva||0;pm.def=a.def||0;var dd=1e6-pm.hp;pm.hp=1e6;pm.stun=0;pm.slow=0;if(dd>0)pvpHit(a,dd);if(!coop)return;
+ var hm=coop.hm;if(hm&&hm.dots.length){var me=coop.me,dt0=1/60,acc=0;for(var z=hm.dots.length-1;z>=0;z--){var q=hm.dots[z],step=Math.min(q.t,DT0);acc+=q.dps*step;q.t-=step;if(q.t<=0)hm.dots.splice(z,1);}hm.dacc=(hm.dacc||0)+acc;if(hm.dacc>=2){var v=Math.round(hm.dacc);hm.dacc-=v;pvpHit(me,v);}}}
+function coloEnd(res,vo){var c=colo;if(!c)return;colo=null;var wasDuel=coop&&coop.duel;if(wasDuel){if(coop.host){rel({t:'dres',res:res==='win'?'loss':res==='loss'?'win':res==='void'?'void':'draw',v:GVER});}coop.endOK=true;wsSend({t:'dend'});coop=null;MM=[];}setTimeout(heartbeat,300);state='over';joy=null;input.atk=false;sfx(res==='win'?'win':res==='loss'?'dead':'pick');
+ if(res==='void'){if(hero){hero.hp=hero.mhp;hero.cp=hero.mcp;}setBg('gate');show('<h2>Бой отменён</h2><p class="stat">У вас и у соперника разные версии игры: у вас '+GVER+', у соперника '+esc(vo||c.vbad||'старая')+'. Бой между разными версиями может считать урон неправильно, поэтому он отменён без изменения рейтинга.</p><p>Обновите игру на обоих устройствах: скачайте новый APK или обновите страницу в браузере.</p><button id="cback">В город</button>');on('cback',city);return;}
  var a=C.ar,gi0=c.gi,ex=1/(1+Math.pow(10,(c.sr-a.r)/400)),sc=res==='win'?1:res==='draw'?0.5:0,dr=Math.round(32*(sc-ex)),old=a.r,low=GLT[gi0]-50;
  a.r=Math.max(gi0>0?low:0,a.r+dr);if(res==='win')a.w++;else if(res==='loss')a.l++;else a.d++;var gi=glr(),rw=[],h;
  if(res==='win'){var g=[ri(2),2,3,4,5][gi0],it;
@@ -1150,7 +1153,7 @@ function strike(m,mult,sk,magic){
  if(t.fireHit&&Math.random()*100<t.fireHit)addDot(m,{dps:dmg*0.15*(1+(t.burn||0)/100),t:3,fi:1});if(t.frostHit&&Math.random()*100<t.frostHit)m.slow=Math.max(m.slow,2);if(t.freezeC&&!m.boss&&!m.rb&&Math.random()*100<t.freezeC){m.stun=Math.max(m.stun||0,1.5);m.slow=Math.max(m.slow,3);float(m.x,m.y-m.r-22,'заморожен','#8fd3ff');}if(t.poisC&&Math.random()*100<t.poisC)addDot(m,{dps:dmg*0.12,t:4,po:1});if(crit&&t.critMp)hero.mp=Math.min(hero.mmp,hero.mp+t.critMp);
  if(sk){if(has(sk,'frostS'))m.slow=Math.max(m.slow,2);if(has(sk,'stunS')&&!m.boss&&!m.rb&&Math.random()<0.2)m.stun=1;if(has(sk,'poisS'))addDot(m,{dps:dmg*0.07,t:4,po:1});if(has(sk,'leech2'))heal(Math.max(1,Math.round(dmg*0.04)));}
  sfx(crit?'crit':'hit');m.hp-=dmg;if(m.hp<=0&&!m.kh){m.kh=1;if(t.killHeal)heal(hero.mhp*t.killHeal/100);if(t.killMp)hero.mp=Math.min(hero.mmp,hero.mp+hero.mmp*t.killMp/100);}m.flash=0.12;var ka=Math.atan2(m.y-hero.y,m.x-hero.x),kpw=(crit?10:5)*(m.boss||m.rb?0.4:1);m.kbx=Math.cos(ka)*kpw;m.kby=Math.sin(ka)*kpw;m.kbE=elapsed;fx({k:'spark',x:m.x-Math.cos(ka)*m.r*0.6,y:m.y-Math.sin(ka)*m.r*0.6,a:ka+3.14159,r:m.r,t:0.18,T:0.18,c:magic?skCol(sk||'nova'):crit?'255,210,120':'255,240,220'});lit(m.x,m.y,crit?90:55,crit?'255,200,120':'255,240,220',crit?0.7:0.4);if(crit){hitStop=Math.max(hitStop,0.05);fx({k:'ring',x:m.x,y:m.y,r:m.r,g:30,t:0.25,T:0.25,c:'255,197,61'});}
- float(m.x,m.y-m.r-8,''+dmg+(crit?'!':''),crit?'#ffc53d':sk?'rgb('+skLight(sk)+')':'#f4f7ff',crit);
+ if(!m.pvp)float(m.x,m.y-m.r-8,''+dmg+(crit?'!':''),crit?'#ffc53d':sk?'rgb('+skLight(sk)+')':'#f4f7ff',crit);else if(crit)float(m.x,m.y-m.r-30,'крит!','#ffc53d',true);
  if(sk&&Math.random()<0.7)burst(m.x,m.y,'rgb('+skCol(sk)+')',4);
  if(sk){if(sk==='cloud'&&!m.dots.some(function(q){return q.po;}))addDot(m,{dps:dmg*0.1,t:2,po:1});if(sk==='rot')addDot(m,{dps:dmg*0.2,t:4,po:1});if(has(sk,'fire')||sk==='meteor')addDot(m,{dps:dmg*0.2*(1+(t.burn||0)/100),t:3,fi:1});
   if(has(sk,'bleed')&&Math.random()<0.6*hero.strC)addDot(m,{dps:dmg*0.15,t:4,bl:1});
@@ -2052,7 +2055,7 @@ function raceSelect(){setBg('title');
 }
 function menu(){
  load();
- box.innerHTML='<h1>Последние Врата</h1><p>Версия 0.48 · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p>'+(ACC?(C?'<button id="go">Продолжить</button>':'<button id="go">Выбрать героя</button>')+'<button id="hsw" class="sec2">Герои аккаунта '+esc(ACC.nick)+'</button>':'<button id="acc0">Войти или создать аккаунт</button>'+(C?'<button id="go" class="sec2">Продолжить без аккаунта</button>':'<button id="offl" class="sec2">Играть без аккаунта</button>'));
+ box.innerHTML='<h1>Последние Врата</h1><p>Версия '+GVER+' · десять этажей Лабиринта</p><p>Смерть в Лабиринте окончательна: герой теряет всё, игра начинается заново. Спускайтесь по этажам, собирайте камни маны и вернитесь к Вратам, пока они открыты. Через 15 минут Врата закрываются: спуск дальше невозможен, домой ведут только Врата этажа, а на этаж возвращается половина монстров, и они сильнее. Флаконов на спуск — по 3 ХП и МП. Опыт идёт за каждого монстра, с бонусом за первое убийство вида.</p><p class="keys">Телефон: левая половина экрана — движение, справа — атака, навыки, перекат, внизу — флаконы. Нажатие на полосы героя открывает его лист.<br>Клавиатура: WASD — движение, J или пробел — атака, K или Shift — перекат, Q и E — флаконы ХП и МП, 1–4 — навыки, R — камень возврата, I — сумка, C — лист героя.</p>'+(ACC?(C?'<button id="go">Продолжить</button>':'<button id="go">Выбрать героя</button>')+'<button id="hsw" class="sec2">Герои аккаунта '+esc(ACC.nick)+'</button>':'<button id="acc0">Войти или создать аккаунт</button>'+(C?'<button id="go" class="sec2">Продолжить без аккаунта</button>':'<button id="offl" class="sec2">Играть без аккаунта</button>'));
  ui.className='';on('go',function(){if(C)city();else heroes();});on('hsw',function(){heroes();});on('acc0',accScreen);on('offl',function(){heroes();});
 }
 
@@ -2155,7 +2158,7 @@ function update(dt){
   else if(sh.el==='ice'){if(Math.random()<0.8)parts.push({x:sh.x+rnd(-3,3),y:sh.y+rnd(-3,3),vx:rnd(-15,15),vy:rnd(-15,15),col:Math.random()<0.5?'rgba(230,245,255,0.9)':'#8fd3ff',t:0.35});}
   else if(sh.el==='pois'){if(Math.random()<0.6)parts.push({x:sh.x+rnd(-3,3),y:sh.y,vx:rnd(-8,8),vy:rnd(20,60),col:'#8fd14f',t:0.4});}
   else if(sh.sk&&Math.random()<0.7)parts.push({x:sh.x,y:sh.y,vx:rnd(-12,12),vy:rnd(-12,12),col:'rgb('+skCol(sh.sk)+')',t:0.25});
-  if(!gone&&sh.own==='o'){if(coop&&coop.me&&dist(sh,coop.me)<coop.me.r+5){var oa=coop.al[coop.opp];if(oa)pvpHit(coop.me,(oa.wd?(oa.wd[0]+oa.wd[1])/2:8)*(sh.mult||1)*(oa.strM||1));gone=true;}}
+  if(!gone&&sh.own==='o'){if(coop&&coop.me&&dist(sh,coop.me)<coop.me.r+5){var oa=coop.al[coop.opp];if(oa&&coop.me.inv<=0)(function(q){withOpp(oa,function(){strike(coop.hm,q.mult||1,q.sk,q.magic);});})(sh);gone=true;}}
   else if(!gone)for(j=0;j<mons.length;j++){var tm=mons[j];if(tm.hp<=0||sh.hit.indexOf(tm)>=0)continue;
    if(dist(sh,tm)<tm.r+5){var sdmg=strike(tm,sh.mult,sh.sk,sh.magic);sh.hit.push(tm);
     if(sh.el==='ice'){if(sdmg>0)tm.slow=Math.max(tm.slow,2.5);for(var iq=0;iq<8;iq++){var ia2=Math.random()*6.283;parts.push({x:tm.x,y:tm.y,vx:Math.cos(ia2)*140,vy:Math.sin(ia2)*140,col:'#d8f2ff',t:0.3});}decal(tm.x,tm.y,tm.r*0.8,'rgba(170,220,255,0.8)','frost');}
