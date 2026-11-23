@@ -280,7 +280,7 @@ function onMsg(c, m) {
       if (!q) { q = { id: pidSeq++, leader: uid, members: [uid], ready: {}, state: 'lobby', host: 0 }; parties.set(q.id, q); userParty.set(uid, q.id); }
       if (q.leader !== uid) return wsSend(c, { t: 'err', msg: 'Приглашать может только ведущий' });
       if (q.state !== 'lobby') return wsSend(c, { t: 'err', msg: 'Группа уже в Лабиринте' });
-      if (q.members.length >= 3) return wsSend(c, { t: 'err', msg: 'В группе уже 3 героя' });
+      if (q.members.length >= 4) return wsSend(c, { t: 'err', msg: 'В группе уже 4 героя' });
       if (!invites.has(u.id)) invites.set(u.id, new Map()); invites.get(u.id).set(q.id, now());
       toUid(u.id, { t: 'invite', pid: q.id, from: c.nick });
       partyPush(q); return wsSend(c, { t: 'msg', msg: 'Приглашение отправлено: ' + u.nick });
@@ -289,7 +289,7 @@ function onMsg(c, m) {
       const iv = invites.get(uid), q = parties.get(m.pid | 0);
       if (!iv || !iv.has(m.pid | 0) || !q || now() - iv.get(m.pid | 0) > 120e3) return wsSend(c, { t: 'err', msg: 'Приглашение устарело' });
       iv.delete(m.pid | 0);
-      if (q.state !== 'lobby' || q.members.length >= 3) return wsSend(c, { t: 'err', msg: 'В группу уже не войти' });
+      if (q.state !== 'lobby' || q.members.length >= 4) return wsSend(c, { t: 'err', msg: 'В группу уже не войти' });
       if (pid) leaveParty(uid);
       q.members.push(uid); userParty.set(uid, q.id); partyPush(q); return;
     }
