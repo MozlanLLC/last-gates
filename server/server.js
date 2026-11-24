@@ -119,7 +119,15 @@ R['PUT /api/save'] = (q, b) => {
     return { ok: true, saved: now() };
   }
   const err = checkChar(b.char); if (err) return [400, 'Сохранение отклонено: ' + err];
-  const t = now(), c = b.char;
+  if (typeof b.base !== 'number') { // старые версии игры: не даём откатить героя на меньший уровень
+    const cur = db.prepare('SELECT data, saved, lvl FROM chars2 WHERE uid=? AND slot=?').get(q.uid, sl);
+    if (cur && cur.data && (cur.lvl | 0) > (b.char.lvl | 0) && b.char.race === JSON.parse(cur.data).race) return [409, 'На сервере герой выше уровнем — обновите игру', { conflict: true, char: JSON.parse(cur.data), saved: cur.saved }];
+  } else { // защита от перезаписи: на другом устройстве сохранено позже
+    const cur = db.prepare('SELECT data, saved FROM chars2 WHERE uid=? AND slot=?').get(q.uid, sl);
+    if (cur && cur.data && cur.saved > b.base) return [409, 'Есть более новое сохранение с другого устройства', { conflict: true, char: JSON.parse(cur.data), saved: cur.saved }];
+  }
+  let t = now(); const c = b.char;
+  { const cur = db.prepare('SELECT saved FROM chars2 WHERE uid=? AND slot=?').get(q.uid, sl); if (cur && cur.saved >= t) t = cur.saved + 1; }
   db.prepare('INSERT INTO chars2(uid,slot,data,saved,race,lvl,ms) VALUES(?,?,?,?,?,?,?) ON CONFLICT(uid,slot) DO UPDATE SET data=excluded.data,saved=excluded.saved,race=excluded.race,lvl=excluded.lvl,ms=excluded.ms')
     .run(q.uid, sl, JSON.stringify(c), t, c.race, c.lvl | 0, c.ms | 0);
   db.prepare('UPDATE users SET cur=? WHERE id=?').run(sl, q.uid);
